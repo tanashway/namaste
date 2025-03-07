@@ -1,8 +1,8 @@
 import React, { useContext, useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ThemeContext, themes } from '../context/ThemeContext';
-import { FaSun, FaMoon, FaYinYang, FaCat, FaPaw } from 'react-icons/fa';
+import { ThemeContext } from '../context/ThemeContext';
+import { FaSun, FaMoon, FaYinYang, FaPaw } from 'react-icons/fa';
 
 const NavContainer = styled.nav`
   position: fixed;

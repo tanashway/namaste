@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import styled from 'styled-components';
 import { ThemeContext } from './context/ThemeContext';
 import Navbar from './components/Navbar';
@@ -20,12 +20,11 @@ const AppContainer = styled.div`
 
 function App() {
   const { currentTheme } = useContext(ThemeContext);
-  const [scrollY, setScrollY] = useState(0);
 
   // Track scroll position for animations
   useEffect(() => {
     const handleScroll = () => {
-      setScrollY(window.scrollY);
+      // We're keeping the event listener but not using the scrollY value
     };
     
     window.addEventListener('scroll', handleScroll);

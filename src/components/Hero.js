@@ -2,7 +2,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { ThemeContext } from '../context/ThemeContext';
-import { FaPaw, FaCat } from 'react-icons/fa';
+import { FaPaw } from 'react-icons/fa';
 
 const HeroSection = styled.section`
   min-height: 100vh;
