@@ -11,7 +11,7 @@ export const themes = {
     accent: '#ff6b6b',
     navBackground: 'rgba(255, 255, 255, 0.8)',
     cardBackground: '#f8f9fa',
-    logoImage: '/blue.png.jpeg',
+    logoImage: '/transparent.png',
     showCatFrame: false,
     showCatElements: false
   },
@@ -37,7 +37,7 @@ export const themes = {
     accent: '#ff6b6b',
     navBackground: 'rgba(97, 218, 251, 0.8)',
     cardBackground: '#4fa8c3',
-    logoImage: '/blue.png.jpeg',
+    logoImage: '/transparent.png',
     showCatFrame: true,
     showCatElements: true,
     catFrameColor: '#ffffff',
