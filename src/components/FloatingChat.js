@@ -125,10 +125,15 @@ const SendButton = styled.button`
 `;
 
 // N8N workflow URL - replace with your actual workflow webhook URL
-const PRODUCTION_WEBHOOK_URL = 'https://n8n.lucidsro.com/webhook/Rk5qA8T90dH6gy5V';
+const PRODUCTION_WEBHOOK_URL = 'https://n8n.lucidsro.com/webhook/d7419ab0-97d5-4493-b58f-3cbf3e2cca25';
 
 // In development, we'll use a relative URL that will be proxied
-const DEVELOPMENT_WEBHOOK_URL = '/webhook/Rk5qA8T90dH6gy5V';
+// The proxy will forward this to the production webhook URL
+const DEVELOPMENT_WEBHOOK_URL = '/n8n-webhook/d7419ab0-97d5-4493-b58f-3cbf3e2cca25';
+
+// Test webhook URL - only works after clicking "Test workflow" in n8n
+// eslint-disable-next-line no-unused-vars
+const TEST_WEBHOOK_URL = 'https://n8n.lucidsro.com/webhook-test/d7419ab0-97d5-4493-b58f-3cbf3e2cca25';
 
 // Check if we're in development mode
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -136,7 +141,7 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 // Use the appropriate webhook URL based on environment
 const N8N_WORKFLOW_URL = isDevelopment ? DEVELOPMENT_WEBHOOK_URL : PRODUCTION_WEBHOOK_URL;
 
-// Set this to false to use the real n8n webhook even in development mode
+// Set this to false to use the real webhook in development mode
 const useSimulatedResponsesInDev = false;
 
 const FloatingChat = () => {
@@ -201,16 +206,25 @@ const FloatingChat = () => {
         setMessages(prev => [...prev, { text: simulatedResponse, isUser: false }]);
       } else {
         // Production mode or development mode with real API calls
+        const requestData = {
+          message: inputValue,
+          timestamp: new Date().toISOString(),
+          theme: currentTheme.name,
+          userId: 'website-visitor',
+          source: isDevelopment ? 'website-chat-dev' : 'website-chat'
+        };
+        
         console.log('Sending message to n8n:', {
           url: N8N_WORKFLOW_URL,
-          data: {
-            message: inputValue,
-            timestamp: new Date().toISOString(),
-            theme: currentTheme.name,
-            userId: 'website-visitor',
-            source: isDevelopment ? 'website-chat-dev' : 'website-chat'
-          }
+          data: requestData
         });
+        
+        // Try with a simpler request format
+        const simplifiedRequestData = {
+          message: inputValue
+        };
+        
+        console.log('Also trying with simplified data:', simplifiedRequestData);
         
         const response = await fetch(N8N_WORKFLOW_URL, {
           method: 'POST',
@@ -218,21 +232,18 @@ const FloatingChat = () => {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
           },
-          body: JSON.stringify({
-            message: inputValue,
-            timestamp: new Date().toISOString(),
-            theme: currentTheme.name,
-            userId: 'website-visitor',
-            source: isDevelopment ? 'website-chat-dev' : 'website-chat'
-          }),
+          body: JSON.stringify(simplifiedRequestData), // Use simplified data
         });
+        
+        console.log('Response status:', response.status);
+        console.log('Response status text:', response.statusText);
         
         if (response.ok) {
           const data = await response.json();
           console.log('Received response from n8n:', data);
           
           // Extract the response text from the data
-          const responseText = data.response || data.text || data.message;
+          const responseText = data.response || data.text || data.message || data.output;
           
           if (responseText) {
             setMessages(prev => [...prev, { 
@@ -257,14 +268,36 @@ const FloatingChat = () => {
             // Try to parse error response
             const errorData = await response.text();
             console.error('Error response body:', errorData);
+            
+            // Check if this is the specific webhook not registered error
+            if (errorData.includes('The requested webhook') && errorData.includes('is not registered')) {
+              setMessages(prev => [...prev, { 
+                text: "The chat service is currently unavailable. The n8n workflow needs to be activated. Please contact the site administrator.", 
+                isUser: false 
+              }]);
+            } else if (errorData.includes('Workflow could not be started')) {
+              setMessages(prev => [...prev, { 
+                text: "The chat service is experiencing technical difficulties. The n8n workflow could not be started. Please contact the site administrator.", 
+                isUser: false 
+              }]);
+            } else if (response.status === 500) {
+              setMessages(prev => [...prev, { 
+                text: "The chat service encountered an internal error. Please try again later or contact support.", 
+                isUser: false 
+              }]);
+            } else {
+              setMessages(prev => [...prev, { 
+                text: `Sorry, I couldn't process your request. Server responded with status: ${response.status} ${response.statusText}`, 
+                isUser: false 
+              }]);
+            }
           } catch (parseError) {
             console.error('Could not parse error response');
+            setMessages(prev => [...prev, { 
+              text: `Sorry, there was an error processing your request (${response.status} ${response.statusText}).`, 
+              isUser: false 
+            }]);
           }
-          
-          setMessages(prev => [...prev, { 
-            text: `Sorry, I couldn't process your request. Server responded with status: ${response.status} ${response.statusText}`, 
-            isUser: false 
-          }]);
         }
       }
     } catch (error) {
