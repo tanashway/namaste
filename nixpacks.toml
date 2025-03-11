@@ -1,0 +1,14 @@
+[phases.setup]
+nixPkgs = ["nodejs", "npm"]
+
+[phases.install]
+cmds = [
+  "npm install",
+  "npm install @ada-anvil/weld@0.5.0 --save-exact"
+]
+
+[phases.build]
+cmds = ["CI=false npm run build"]
+
+[start]
+cmd = "npx serve -s build" 
