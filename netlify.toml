@@ -1,5 +1,5 @@
 [build]
-  command = "npm install && CI=false npm run build"
+  command = "chmod +x build-script.sh && ./build-script.sh"
   publish = "build"
 
 [[redirects]]
