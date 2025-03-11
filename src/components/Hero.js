@@ -51,21 +51,21 @@ const HeroSubtitle = styled(motion.p)`
   }
 `;
 
-const CTAButton = styled(motion.button)`
-  background-color: ${props => props.theme.accent};
+const CTAButton = styled(motion.a)`
+  display: inline-block;
+  background: ${props => props.theme.primary};
   color: white;
-  border: none;
   padding: 0.8rem 2rem;
   border-radius: 50px;
-  font-size: 1.2rem;
   font-weight: 600;
-  margin-top: 1rem;
+  margin-top: 2rem;
+  text-decoration: none;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
   
   &:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+    box-shadow: 0 7px 20px rgba(0, 0, 0, 0.2);
   }
 `;
 
@@ -227,12 +227,14 @@ const Hero = () => {
         </HeroSubtitle>
         
         <CTAButton
+          href="https://linktr.ee/namastecardano"
+          target="_blank"
+          rel="noopener noreferrer"
           theme={currentTheme}
-          variants={fadeInUp}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          {isNamasteTheme ? "Paw-some Features" : "Explore Namaste"}
+          {isNamasteTheme ? "Explore Meowmaste" : "Explore Namaste"}
         </CTAButton>
       </HeroContent>
     </HeroSection>

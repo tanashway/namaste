@@ -46,10 +46,10 @@ let response;
 if (message.toLowerCase().includes('buy') || message.toLowerCase().includes('purchase')) {
   response = "You can buy Namaste tokens on our partner exchanges. Check our website for the latest listing information!";
 } 
-else if (message.toLowerCase().includes('price') || message.toLowerCase().includes('worth')) {
+else if (message.includes('price') || message.includes('worth')) {
   response = "The price of Namaste token fluctuates based on market conditions. Check our Linktr.ee (https://linktr.ee/namastecardano) for current price information.";
 }
-else if (message.toLowerCase().includes('tokenomics')) {
+else if (message.includes('tokenomics')) {
   response = "Namaste token has a fair distribution model with no team allocation. Check our tokenomics section for more details!";
 }
 else if (message.toLowerCase().includes('hello') || message.toLowerCase().includes('hi')) {
