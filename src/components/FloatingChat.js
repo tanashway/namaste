@@ -196,7 +196,7 @@ const FloatingChat = () => {
         if (message.includes('buy') || message.includes('purchase')) {
           simulatedResponse = "You can buy Namaste tokens on our partner exchanges. Check our website for the latest listing information!";
         } else if (message.includes('price') || message.includes('worth')) {
-          simulatedResponse = "The price of Namaste token fluctuates based on market conditions. Check our Linktr.ee for current price information.";
+          simulatedResponse = "The price of Namaste token fluctuates based on market conditions. Check our Linktr.ee (https://linktr.ee/namastecardano) for current price information.";
         } else if (message.includes('tokenomics')) {
           simulatedResponse = "Namaste token has a fair distribution model with no team allocation. Check our tokenomics section for more details!";
         } else if (message.includes('hello') || message.includes('hi')) {

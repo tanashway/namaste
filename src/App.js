@@ -1,6 +1,7 @@
 import React, { useContext, useEffect } from 'react';
 import styled from 'styled-components';
 import { ThemeContext } from './context/ThemeContext';
+import { WalletContextProvider } from './context/WalletContext';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import About from './components/About';
@@ -33,18 +34,20 @@ function App() {
   }, []);
 
   return (
-    <AppContainer theme={currentTheme}>
-      <CatThemeElements />
-      <Navbar />
-      <ScrollProgress />
-      <Hero />
-      <About />
-      <Features />
-      <Tokenomics />
-      <Community />
-      <Footer />
-      <FloatingChat />
-    </AppContainer>
+    <WalletContextProvider>
+      <AppContainer theme={currentTheme}>
+        <CatThemeElements />
+        <Navbar />
+        <ScrollProgress />
+        <Hero />
+        <About />
+        <Features />
+        <Tokenomics />
+        <Community />
+        <Footer />
+        <FloatingChat />
+      </AppContainer>
+    </WalletContextProvider>
   );
 }
 

@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeContext } from '../context/ThemeContext';
 import { FaSun, FaMoon, FaYinYang, FaPaw } from 'react-icons/fa';
+import WalletConnect from './WalletConnect';
 
 const NavContainer = styled.nav`
   position: fixed;
@@ -103,26 +104,6 @@ const ButtonGroup = styled.div`
   gap: 1rem;
 `;
 
-const ConnectButton = styled(motion.a)`
-  background-color: ${props => props.theme.primary};
-  color: white;
-  border: none;
-  padding: 0.5rem 1.5rem;
-  border-radius: 50px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(97, 218, 251, 0.4);
-  }
-`;
-
 const ThemeToggle = styled.div`
   display: flex;
   gap: 0.5rem;
@@ -148,6 +129,26 @@ const CatPawIndicator = styled(motion.span)`
   right: -10px;
   font-size: 0.8rem;
   color: ${props => props.theme.accent};
+`;
+
+const LinkButton = styled(motion.a)`
+  background-color: ${props => props.theme.accent};
+  color: white;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: 50px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+  }
 `;
 
 const Navbar = () => {
@@ -280,8 +281,8 @@ const Navbar = () => {
           </ThemeButton>
         </ThemeToggle>
         
-        <ConnectButton 
-          href="https://linktr.ee/namastetoken"
+        <LinkButton 
+          href="https://linktr.ee/namastecardano"
           target="_blank"
           rel="noopener noreferrer"
           theme={currentTheme}
@@ -289,8 +290,10 @@ const Navbar = () => {
           whileHover="hover"
           whileTap="tap"
         >
-          {isNamasteTheme ? "Linktr.ee" : "Linktr.ee"}
-        </ConnectButton>
+          Linktr.ee
+        </LinkButton>
+        
+        <WalletConnect theme={currentTheme} isNamasteTheme={isNamasteTheme} />
         
         <MobileMenuButton 
           theme={currentTheme} 
@@ -342,7 +345,7 @@ const Navbar = () => {
               {isNamasteTheme ? "Cat-munity" : "Community"}
             </MobileNavLink>
             <MobileNavLink 
-              href="https://linktr.ee/namastetoken" 
+              href="https://linktr.ee/namastecardano" 
               theme={currentTheme}
               target="_blank"
               rel="noopener noreferrer"
@@ -350,6 +353,17 @@ const Navbar = () => {
               whileHover={{ x: 5 }}
             >
               Linktr.ee
+            </MobileNavLink>
+            <MobileNavLink 
+              as="button"
+              theme={currentTheme}
+              onClick={() => {
+                setIsOpen(false);
+                // We'll handle wallet connection in the main WalletConnect component
+              }}
+              whileHover={{ x: 5 }}
+            >
+              {isNamasteTheme ? "Connect Paw-let" : "Connect Wallet"}
             </MobileNavLink>
           </MobileMenu>
         )}
