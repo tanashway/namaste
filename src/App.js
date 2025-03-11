@@ -10,6 +10,7 @@ import Community from './components/Community';
 import Footer from './components/Footer';
 import ScrollProgress from './components/ScrollProgress';
 import CatThemeElements from './components/CatThemeElements';
+import FloatingChat from './components/FloatingChat';
 
 const AppContainer = styled.div`
   background-color: ${props => props.theme.background};
@@ -42,6 +43,7 @@ function App() {
       <Tokenomics />
       <Community />
       <Footer />
+      <FloatingChat />
     </AppContainer>
   );
 }
