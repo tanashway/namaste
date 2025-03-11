@@ -127,6 +127,9 @@ const SendButton = styled.button`
 // N8N workflow URL - replace with your actual workflow webhook URL
 const N8N_WORKFLOW_URL = 'https://n8n.lucidsro.com/webhook/Rk5qA8T90dH6gy5V';
 
+// Check if we're in development mode
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 const FloatingChat = () => {
   const { currentTheme } = useContext(ThemeContext);
   const [isOpen, setIsOpen] = useState(false);
@@ -165,32 +168,54 @@ const FloatingChat = () => {
     setIsLoading(true);
     
     try {
-      // Send message to n8n workflow
-      const response = await fetch(N8N_WORKFLOW_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: inputValue,
-          timestamp: new Date().toISOString(),
-          theme: currentTheme.name,
-          // Add any additional data your n8n workflow might need
-          userId: 'website-visitor',
-          source: 'website-chat'
-        }),
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        // Add bot response - adjust based on your n8n workflow's response format
-        setMessages(prev => [...prev, { 
-          text: data.response || data.text || data.message || "Thanks for your message!", 
-          isUser: false 
-        }]);
+      // In development mode, simulate a response instead of making the actual API call
+      // This is a temporary workaround until CORS is configured on the n8n server
+      if (isDevelopment) {
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Generate a simple response based on the message
+        let simulatedResponse = "Thanks for your message! This is a simulated response for local development.";
+        
+        // Simple keyword matching for demo purposes
+        const message = inputValue.toLowerCase();
+        if (message.includes('buy') || message.includes('purchase')) {
+          simulatedResponse = "You can buy Namaste tokens on our partner exchanges. Check our website for the latest listing information!";
+        } else if (message.includes('price') || message.includes('worth')) {
+          simulatedResponse = "The price of Namaste token fluctuates based on market conditions. Check our Linktr.ee for current price information.";
+        } else if (message.includes('tokenomics')) {
+          simulatedResponse = "Namaste token has a fair distribution model with no team allocation. Check our tokenomics section for more details!";
+        } else if (message.includes('hello') || message.includes('hi')) {
+          simulatedResponse = currentTheme.name === 'namaste' ? "Meow! How can I help you today?" : "Namaste! How can I assist you with our token?";
+        }
+        
+        setMessages(prev => [...prev, { text: simulatedResponse, isUser: false }]);
       } else {
-        // Handle error
-        setMessages(prev => [...prev, { text: "Sorry, I couldn't process your request. Please try again later.", isUser: false }]);
+        // Production mode - make the actual API call
+        const response = await fetch(N8N_WORKFLOW_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: inputValue,
+            timestamp: new Date().toISOString(),
+            theme: currentTheme.name,
+            userId: 'website-visitor',
+            source: 'website-chat'
+          }),
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setMessages(prev => [...prev, { 
+            text: data.response || data.text || data.message || "Thanks for your message!", 
+            isUser: false 
+          }]);
+        } else {
+          // Handle error
+          setMessages(prev => [...prev, { text: "Sorry, I couldn't process your request. Please try again later.", isUser: false }]);
+        }
       }
     } catch (error) {
       console.error('Error sending message to n8n:', error);
