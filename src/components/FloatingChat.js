@@ -125,10 +125,16 @@ const SendButton = styled.button`
 `;
 
 // N8N workflow URL - replace with your actual workflow webhook URL
-const N8N_WORKFLOW_URL = 'https://n8n.lucidsro.com/webhook/Rk5qA8T90dH6gy5V';
+const PRODUCTION_WEBHOOK_URL = 'https://n8n.lucidsro.com/webhook/Rk5qA8T90dH6gy5V';
+
+// In development, we'll use a relative URL that will be proxied
+const DEVELOPMENT_WEBHOOK_URL = '/webhook/Rk5qA8T90dH6gy5V';
 
 // Check if we're in development mode
 const isDevelopment = process.env.NODE_ENV === 'development';
+
+// Use the appropriate webhook URL based on environment
+const N8N_WORKFLOW_URL = isDevelopment ? DEVELOPMENT_WEBHOOK_URL : PRODUCTION_WEBHOOK_URL;
 
 // Set this to false to use the real n8n webhook even in development mode
 const useSimulatedResponsesInDev = false;
@@ -202,7 +208,7 @@ const FloatingChat = () => {
             timestamp: new Date().toISOString(),
             theme: currentTheme.name,
             userId: 'website-visitor',
-            source: 'website-chat'
+            source: isDevelopment ? 'website-chat-dev' : 'website-chat'
           }
         });
         
@@ -210,7 +216,6 @@ const FloatingChat = () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            // Add these headers to help with CORS preflight requests
             'Accept': 'application/json',
           },
           body: JSON.stringify({
@@ -218,7 +223,7 @@ const FloatingChat = () => {
             timestamp: new Date().toISOString(),
             theme: currentTheme.name,
             userId: 'website-visitor',
-            source: 'website-chat'
+            source: isDevelopment ? 'website-chat-dev' : 'website-chat'
           }),
         });
         
