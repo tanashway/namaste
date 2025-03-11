@@ -130,6 +130,9 @@ const N8N_WORKFLOW_URL = 'https://n8n.lucidsro.com/webhook/Rk5qA8T90dH6gy5V';
 // Check if we're in development mode
 const isDevelopment = process.env.NODE_ENV === 'development';
 
+// Set this to false to use the real n8n webhook even in development mode
+const useSimulatedResponsesInDev = false;
+
 const FloatingChat = () => {
   const { currentTheme } = useContext(ThemeContext);
   const [isOpen, setIsOpen] = useState(false);
@@ -170,7 +173,7 @@ const FloatingChat = () => {
     try {
       // In development mode, simulate a response instead of making the actual API call
       // This is a temporary workaround until CORS is configured on the n8n server
-      if (isDevelopment) {
+      if (isDevelopment && useSimulatedResponsesInDev) {
         // Simulate network delay
         await new Promise(resolve => setTimeout(resolve, 1000));
         
@@ -191,11 +194,24 @@ const FloatingChat = () => {
         
         setMessages(prev => [...prev, { text: simulatedResponse, isUser: false }]);
       } else {
-        // Production mode - make the actual API call
+        // Production mode or development mode with real API calls
+        console.log('Sending message to n8n:', {
+          url: N8N_WORKFLOW_URL,
+          data: {
+            message: inputValue,
+            timestamp: new Date().toISOString(),
+            theme: currentTheme.name,
+            userId: 'website-visitor',
+            source: 'website-chat'
+          }
+        });
+        
         const response = await fetch(N8N_WORKFLOW_URL, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            // Add these headers to help with CORS preflight requests
+            'Accept': 'application/json',
           },
           body: JSON.stringify({
             message: inputValue,
@@ -208,18 +224,50 @@ const FloatingChat = () => {
         
         if (response.ok) {
           const data = await response.json();
+          console.log('Received response from n8n:', data);
+          
+          // Extract the response text from the data
+          const responseText = data.response || data.text || data.message;
+          
+          if (responseText) {
+            setMessages(prev => [...prev, { 
+              text: responseText, 
+              isUser: false 
+            }]);
+          } else {
+            console.warn('Response from n8n did not contain expected fields:', data);
+            setMessages(prev => [...prev, { 
+              text: "Received a response, but couldn't find the message content. Please check the console for details.", 
+              isUser: false 
+            }]);
+          }
+        } else {
+          // Handle error with more details
+          console.error('Error response from n8n:', {
+            status: response.status,
+            statusText: response.statusText
+          });
+          
+          try {
+            // Try to parse error response
+            const errorData = await response.text();
+            console.error('Error response body:', errorData);
+          } catch (parseError) {
+            console.error('Could not parse error response');
+          }
+          
           setMessages(prev => [...prev, { 
-            text: data.response || data.text || data.message || "Thanks for your message!", 
+            text: `Sorry, I couldn't process your request. Server responded with status: ${response.status} ${response.statusText}`, 
             isUser: false 
           }]);
-        } else {
-          // Handle error
-          setMessages(prev => [...prev, { text: "Sorry, I couldn't process your request. Please try again later.", isUser: false }]);
         }
       }
     } catch (error) {
       console.error('Error sending message to n8n:', error);
-      setMessages(prev => [...prev, { text: "Sorry, there was an error connecting to our services. Please try again later.", isUser: false }]);
+      setMessages(prev => [...prev, { 
+        text: `Sorry, there was an error connecting to our services: ${error.message}. Please try again later.`, 
+        isUser: false 
+      }]);
     } finally {
       setIsLoading(false);
     }
