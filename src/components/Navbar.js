@@ -103,7 +103,7 @@ const ButtonGroup = styled.div`
   gap: 1rem;
 `;
 
-const ConnectButton = styled(motion.button)`
+const ConnectButton = styled(motion.a)`
   background-color: ${props => props.theme.primary};
   color: white;
   border: none;
@@ -111,6 +111,11 @@ const ConnectButton = styled(motion.button)`
   border-radius: 50px;
   font-weight: 600;
   transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
   
   &:hover {
     transform: translateY(-2px);
@@ -276,12 +281,15 @@ const Navbar = () => {
         </ThemeToggle>
         
         <ConnectButton 
+          href="https://linktr.ee/namastetoken"
+          target="_blank"
+          rel="noopener noreferrer"
           theme={currentTheme}
           variants={buttonVariants}
           whileHover="hover"
           whileTap="tap"
         >
-          {isNamasteTheme ? "Connect Paw-let" : "Connect Wallet"}
+          {isNamasteTheme ? "Linktr.ee" : "Linktr.ee"}
         </ConnectButton>
         
         <MobileMenuButton 
@@ -332,6 +340,16 @@ const Navbar = () => {
               whileHover={{ x: 5 }}
             >
               {isNamasteTheme ? "Cat-munity" : "Community"}
+            </MobileNavLink>
+            <MobileNavLink 
+              href="https://linktr.ee/namastetoken" 
+              theme={currentTheme}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setIsOpen(false)}
+              whileHover={{ x: 5 }}
+            >
+              Linktr.ee
             </MobileNavLink>
           </MobileMenu>
         )}
