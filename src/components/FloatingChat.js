@@ -141,8 +141,8 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 // Use the appropriate webhook URL based on environment
 const N8N_WORKFLOW_URL = isDevelopment ? DEVELOPMENT_WEBHOOK_URL : PRODUCTION_WEBHOOK_URL;
 
-// Set this to true to use simulated responses in development mode
-const useSimulatedResponsesInDev = true;
+// Set this to false to use the real webhook in development mode
+const useSimulatedResponsesInDev = false;
 
 const FloatingChat = () => {
   const { currentTheme } = useContext(ThemeContext);
