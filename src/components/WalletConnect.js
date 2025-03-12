@@ -5,8 +5,8 @@ import { useWalletContext } from '../context/WalletContext';
 import { FaWallet, FaCheck, FaTimes } from 'react-icons/fa';
 
 const ConnectButton = styled(motion.button)`
-  background-color: ${props => props.theme.primary};
-  color: white;
+  background-color: ${props => props.theme.name === 'namaste' ? '#000000' : props.theme.primary};
+  color: ${props => props.theme.name === 'namaste' ? '#ffffff' : 'white'};
   border: none;
   padding: 0.5rem 1.5rem;
   border-radius: 50px;
@@ -21,6 +21,11 @@ const ConnectButton = styled(motion.button)`
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(97, 218, 251, 0.4);
+  }
+  
+  @media (max-width: 768px) {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
   }
 `;
 
@@ -91,6 +96,13 @@ const DisconnectButton = styled(motion.button)`
   }
 `;
 
+const ButtonText = styled.span`
+  @media (max-width: 768px) {
+    display: inline;
+    font-size: ${props => props.hideOnMobile ? '0.8rem' : '0.9rem'};
+  }
+`;
+
 const WalletConnect = ({ theme, isNamasteTheme }) => {
   const { 
     isConnected, 
@@ -103,10 +115,19 @@ const WalletConnect = ({ theme, isNamasteTheme }) => {
   
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [availableWallets, setAvailableWallets] = useState([]);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   
   useEffect(() => {
     // Get available wallets when component mounts
     setAvailableWallets(getAvailableWallets());
+    
+    // Handle window resize for responsive text
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, [getAvailableWallets]);
   
   const toggleDropdown = () => {
@@ -150,12 +171,16 @@ const WalletConnect = ({ theme, isNamasteTheme }) => {
         {isConnected ? (
           <>
             <FaCheck />
-            {isNamasteTheme ? "Paw-let" : "Connected"}
+            <ButtonText>
+              {isNamasteTheme ? (isMobile ? "Paw" : "Paw-let") : "Connected"}
+            </ButtonText>
           </>
         ) : (
           <>
             <FaWallet />
-            {isNamasteTheme ? "Connect Paw-let" : "Connect Wallet"}
+            <ButtonText hideOnMobile={isNamasteTheme}>
+              {isNamasteTheme ? (isMobile ? "Paw" : "Connect Paw-let") : "Connect"}
+            </ButtonText>
           </>
         )}
       </ConnectButton>
