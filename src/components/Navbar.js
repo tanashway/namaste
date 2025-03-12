@@ -131,26 +131,6 @@ const CatPawIndicator = styled(motion.span)`
   color: ${props => props.theme.accent};
 `;
 
-const LinkButton = styled(motion.a)`
-  background-color: ${props => props.theme.accent};
-  color: white;
-  border: none;
-  padding: 0.5rem 1.5rem;
-  border-radius: 50px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
-  }
-`;
-
 const Navbar = () => {
   const { currentTheme, changeTheme } = useContext(ThemeContext);
   const [isOpen, setIsOpen] = useState(false);
@@ -281,18 +261,6 @@ const Navbar = () => {
           </ThemeButton>
         </ThemeToggle>
         
-        <LinkButton 
-          href="https://linktr.ee/namastecardano"
-          target="_blank"
-          rel="noopener noreferrer"
-          theme={currentTheme}
-          variants={buttonVariants}
-          whileHover="hover"
-          whileTap="tap"
-        >
-          Linktr.ee
-        </LinkButton>
-        
         <WalletConnect theme={currentTheme} isNamasteTheme={isNamasteTheme} />
         
         <MobileMenuButton 
@@ -343,16 +311,6 @@ const Navbar = () => {
               whileHover={{ x: 5 }}
             >
               {isNamasteTheme ? "Cat-munity" : "Community"}
-            </MobileNavLink>
-            <MobileNavLink 
-              href="https://linktr.ee/namastecardano" 
-              theme={currentTheme}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => setIsOpen(false)}
-              whileHover={{ x: 5 }}
-            >
-              Linktr.ee
             </MobileNavLink>
             <MobileNavLink 
               as="button"
