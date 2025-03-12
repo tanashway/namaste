@@ -141,8 +141,8 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 // Use the appropriate webhook URL based on environment
 const N8N_WORKFLOW_URL = isDevelopment ? DEVELOPMENT_WEBHOOK_URL : PRODUCTION_WEBHOOK_URL;
 
-// Set this to false to use the real webhook in development mode
-const useSimulatedResponsesInDev = false;
+// Set this to true to use simulated responses in development mode
+const useSimulatedResponsesInDev = true;
 
 const FloatingChat = () => {
   const { currentTheme } = useContext(ThemeContext);
@@ -239,21 +239,74 @@ const FloatingChat = () => {
         console.log('Response status text:', response.statusText);
         
         if (response.ok) {
-          const data = await response.json();
-          console.log('Received response from n8n:', data);
-          
-          // Extract the response text from the data
-          const responseText = data.response || data.text || data.message || data.output;
-          
-          if (responseText) {
+          try {
+            // Check if there's content to parse
+            const contentLength = response.headers.get('content-length');
+            const contentType = response.headers.get('content-type');
+            
+            if (contentLength && parseInt(contentLength) > 0 && contentType && contentType.includes('application/json')) {
+              const data = await response.json();
+              console.log('Received response from n8n:', data);
+              
+              // Extract the response text from the data
+              const responseText = data.response || data.text || data.message || data.output;
+              
+              if (responseText) {
+                setMessages(prev => [...prev, { 
+                  text: responseText, 
+                  isUser: false 
+                }]);
+              } else {
+                console.warn('Response from n8n did not contain expected fields:', data);
+                setMessages(prev => [...prev, { 
+                  text: "I received your message, but I'm not sure how to respond. Our team is working on improving my responses.", 
+                  isUser: false 
+                }]);
+              }
+            } else {
+              // Handle empty response or non-JSON response
+              console.log('Empty or non-JSON response received');
+              
+              // Provide a fallback response
+              let fallbackResponse = "Thank you for your message! I've received it, but our AI system is currently experiencing some technical difficulties.";
+              
+              // Simple keyword matching for fallback responses
+              const message = inputValue.toLowerCase();
+              if (message.includes('buy') || message.includes('purchase')) {
+                fallbackResponse = "You can buy Namaste tokens on our partner exchanges. Check our website for the latest listing information!";
+              } else if (message.includes('price') || message.includes('worth')) {
+                fallbackResponse = "The price of Namaste token fluctuates based on market conditions. Check our Linktr.ee (https://linktr.ee/namastecardano) for current price information.";
+              } else if (message.includes('tokenomics')) {
+                fallbackResponse = "Namaste token has a fair distribution model with no team allocation. Check our tokenomics section for more details!";
+              } else if (message.includes('hello') || message.includes('hi')) {
+                fallbackResponse = currentTheme.name === 'namaste' ? "Meow! How can I help you today?" : "Namaste! How can I assist you with our token?";
+              }
+              
+              setMessages(prev => [...prev, { 
+                text: fallbackResponse, 
+                isUser: false 
+              }]);
+            }
+          } catch (parseError) {
+            console.error('Error parsing JSON response:', parseError);
+            
+            // Provide a fallback response for JSON parsing errors
+            let fallbackResponse = "Thank you for your message! I've received it, but our AI system is currently experiencing some technical difficulties.";
+              
+            // Simple keyword matching for fallback responses
+            const message = inputValue.toLowerCase();
+            if (message.includes('buy') || message.includes('purchase')) {
+              fallbackResponse = "You can buy Namaste tokens on our partner exchanges. Check our website for the latest listing information!";
+            } else if (message.includes('price') || message.includes('worth')) {
+              fallbackResponse = "The price of Namaste token fluctuates based on market conditions. Check our Linktr.ee (https://linktr.ee/namastecardano) for current price information.";
+            } else if (message.includes('tokenomics')) {
+              fallbackResponse = "Namaste token has a fair distribution model with no team allocation. Check our tokenomics section for more details!";
+            } else if (message.includes('hello') || message.includes('hi')) {
+              fallbackResponse = currentTheme.name === 'namaste' ? "Meow! How can I help you today?" : "Namaste! How can I assist you with our token?";
+            }
+            
             setMessages(prev => [...prev, { 
-              text: responseText, 
-              isUser: false 
-            }]);
-          } else {
-            console.warn('Response from n8n did not contain expected fields:', data);
-            setMessages(prev => [...prev, { 
-              text: "Received a response, but couldn't find the message content. Please check the console for details.", 
+              text: fallbackResponse, 
               isUser: false 
             }]);
           }
@@ -272,29 +325,29 @@ const FloatingChat = () => {
             // Check if this is the specific webhook not registered error
             if (errorData.includes('The requested webhook') && errorData.includes('is not registered')) {
               setMessages(prev => [...prev, { 
-                text: "The chat service is currently unavailable. The n8n workflow needs to be activated. Please contact the site administrator.", 
+                text: "I'm currently offline for maintenance. Please try again later or contact us through Discord or X.com.", 
                 isUser: false 
               }]);
             } else if (errorData.includes('Workflow could not be started')) {
               setMessages(prev => [...prev, { 
-                text: "The chat service is experiencing technical difficulties. The n8n workflow could not be started. Please contact the site administrator.", 
+                text: "I'm currently offline for maintenance. Please try again later or contact us through Discord or X.com.", 
                 isUser: false 
               }]);
             } else if (response.status === 500) {
               setMessages(prev => [...prev, { 
-                text: "The chat service encountered an internal error. Please try again later or contact support.", 
+                text: "I'm currently offline for maintenance. Please try again later or contact us through Discord or X.com.", 
                 isUser: false 
               }]);
             } else {
               setMessages(prev => [...prev, { 
-                text: `Sorry, I couldn't process your request. Server responded with status: ${response.status} ${response.statusText}`, 
+                text: "I'm currently offline for maintenance. Please try again later or contact us through Discord or X.com.", 
                 isUser: false 
               }]);
             }
           } catch (parseError) {
             console.error('Could not parse error response');
             setMessages(prev => [...prev, { 
-              text: `Sorry, there was an error processing your request (${response.status} ${response.statusText}).`, 
+              text: "I'm currently offline for maintenance. Please try again later or contact us through Discord or X.com.", 
               isUser: false 
             }]);
           }
@@ -302,8 +355,24 @@ const FloatingChat = () => {
       }
     } catch (error) {
       console.error('Error sending message to n8n:', error);
+      
+      // Provide a fallback response for connection errors
+      let fallbackResponse = "Thank you for your message! I've received it, but our AI system is currently experiencing some technical difficulties.";
+        
+      // Simple keyword matching for fallback responses
+      const message = inputValue.toLowerCase();
+      if (message.includes('buy') || message.includes('purchase')) {
+        fallbackResponse = "You can buy Namaste tokens on our partner exchanges. Check our website for the latest listing information!";
+      } else if (message.includes('price') || message.includes('worth')) {
+        fallbackResponse = "The price of Namaste token fluctuates based on market conditions. Check our Linktr.ee (https://linktr.ee/namastecardano) for current price information.";
+      } else if (message.includes('tokenomics')) {
+        fallbackResponse = "Namaste token has a fair distribution model with no team allocation. Check our tokenomics section for more details!";
+      } else if (message.includes('hello') || message.includes('hi')) {
+        fallbackResponse = currentTheme.name === 'namaste' ? "Meow! How can I help you today?" : "Namaste! How can I assist you with our token?";
+      }
+      
       setMessages(prev => [...prev, { 
-        text: `Sorry, there was an error connecting to our services: ${error.message}. Please try again later.`, 
+        text: fallbackResponse, 
         isUser: false 
       }]);
     } finally {
