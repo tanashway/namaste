@@ -6,62 +6,50 @@
 
 const fetch = require('node-fetch');
 
-const N8N_WEBHOOK_URL = 'https://n8n.lucidsro.com/webhook/Rk5qA8T90dH6gy5V';
+// N8N webhook URL
+const WEBHOOK_URL = 'https://n8n.lucidsro.com/webhook/d7419ab0-97d5-4493-b58f-3cbf3e2cca25';
+
+// Test message
+const testMessage = {
+  message: 'Hello from test script'
+};
 
 async function testWebhook() {
-  console.log('Testing n8n webhook...');
-  console.log(`URL: ${N8N_WEBHOOK_URL}`);
+  console.log(`Testing webhook at: ${WEBHOOK_URL}`);
+  console.log(`Sending data: ${JSON.stringify(testMessage)}`);
   
   try {
-    // First, test with a simple message
-    const response = await fetch(N8N_WEBHOOK_URL, {
+    const response = await fetch(WEBHOOK_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
-      body: JSON.stringify({
-        message: 'Hello from test script',
-        timestamp: new Date().toISOString(),
-        theme: 'light',
-        userId: 'test-script',
-        source: 'test-script'
-      }),
+      body: JSON.stringify(testMessage)
     });
     
-    console.log('Response status:', response.status);
-    console.log('Response status text:', response.statusText);
+    console.log(`Response status: ${response.status} ${response.statusText}`);
+    console.log('Response headers:', response.headers.raw());
     
-    // Log response headers (useful for CORS debugging)
-    console.log('Response headers:');
-    response.headers.forEach((value, name) => {
-      console.log(`  ${name}: ${value}`);
-    });
+    // Check if there's content to parse
+    const contentLength = response.headers.get('content-length');
     
-    if (response.ok) {
-      const data = await response.json();
-      console.log('Response data:', data);
-      
-      // Check if the response has the expected format
-      const responseText = data.response || data.text || data.message;
-      if (responseText) {
-        console.log('✅ Success! Received response:', responseText);
-      } else {
-        console.warn('⚠️ Warning: Response does not contain expected fields');
-        console.log('Full response:', data);
-      }
+    if (!contentLength || parseInt(contentLength) === 0) {
+      console.log('⚠️ Empty response received');
+      return;
+    }
+    
+    const data = await response.json();
+    const responseText = data.response || data.text || data.message;
+    if (responseText) {
+      console.log('✅ Success! Received response:', responseText);
     } else {
-      console.error('❌ Error: Server responded with status', response.status);
-      try {
-        const errorText = await response.text();
-        console.error('Error response:', errorText);
-      } catch (e) {
-        console.error('Could not parse error response');
-      }
+      console.log('⚠️ Response did not contain expected fields:', data);
     }
   } catch (error) {
-    console.error('❌ Error connecting to webhook:', error.message);
+    console.error('❌ Error testing webhook:', error);
   }
 }
 
+// Run the test
 testWebhook(); 

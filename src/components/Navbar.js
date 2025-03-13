@@ -19,6 +19,10 @@ const NavContainer = styled.nav`
   align-items: center;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+  
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 `;
 
 const Logo = styled(motion.div)`
@@ -102,6 +106,10 @@ const MobileNavLink = styled(motion.a)`
 const ButtonGroup = styled.div`
   display: flex;
   gap: 1rem;
+  
+  @media (max-width: 768px) {
+    gap: 0.5rem;
+  }
 `;
 
 const ThemeToggle = styled.div`
@@ -113,9 +121,9 @@ const ThemeToggle = styled.div`
 const ThemeButton = styled(motion.button)`
   background: none;
   border: none;
-  color: ${props => props.active ? props.theme.primary : props.theme.text};
+  color: ${props => props.$active ? props.theme.primary : props.theme.text};
   font-size: 1.2rem;
-  opacity: ${props => props.active ? 1 : 0.5};
+  opacity: ${props => props.$active ? 1 : 0.5};
   position: relative;
   
   &:hover {
@@ -128,7 +136,7 @@ const CatPawIndicator = styled(motion.span)`
   top: -10px;
   right: -10px;
   font-size: 0.8rem;
-  color: ${props => props.theme.accent};
+  color: ${props => props.theme.name === 'namaste' ? '#000' : props.theme.accent};
 `;
 
 const Navbar = () => {
@@ -156,16 +164,6 @@ const Navbar = () => {
   };
   
   const logoVariants = {
-    hover: {
-      scale: 1.05,
-      transition: { duration: 0.2 }
-    },
-    tap: {
-      scale: 0.95
-    }
-  };
-  
-  const buttonVariants = {
     hover: {
       scale: 1.05,
       transition: { duration: 0.2 }
@@ -225,7 +223,7 @@ const Navbar = () => {
         <ThemeToggle>
           <ThemeButton 
             theme={currentTheme}
-            active={currentTheme.name === 'light'}
+            $active={currentTheme.name === 'light'}
             onClick={() => changeTheme('light')}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -234,7 +232,7 @@ const Navbar = () => {
           </ThemeButton>
           <ThemeButton 
             theme={currentTheme}
-            active={currentTheme.name === 'dark'}
+            $active={currentTheme.name === 'dark'}
             onClick={() => changeTheme('dark')}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -243,7 +241,7 @@ const Navbar = () => {
           </ThemeButton>
           <ThemeButton 
             theme={currentTheme}
-            active={currentTheme.name === 'namaste'}
+            $active={currentTheme.name === 'namaste'}
             onClick={() => changeTheme('namaste')}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}

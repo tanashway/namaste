@@ -99,7 +99,7 @@ const DisconnectButton = styled(motion.button)`
 const ButtonText = styled.span`
   @media (max-width: 768px) {
     display: inline;
-    font-size: ${props => props.hideOnMobile ? '0.8rem' : '0.9rem'};
+    font-size: ${props => props.$hideOnMobile ? '0.8rem' : '0.9rem'};
   }
 `;
 
@@ -178,7 +178,7 @@ const WalletConnect = ({ theme, isNamasteTheme }) => {
         ) : (
           <>
             <FaWallet />
-            <ButtonText hideOnMobile={isNamasteTheme}>
+            <ButtonText $hideOnMobile={isNamasteTheme}>
               {isNamasteTheme ? (isMobile ? "Paw" : "Connect Paw-let") : "Connect"}
             </ButtonText>
           </>

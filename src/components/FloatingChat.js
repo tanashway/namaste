@@ -80,7 +80,7 @@ const Message = styled.div`
   margin-bottom: 5px;
   word-break: break-word;
   
-  ${props => props.isUser ? `
+  ${props => props.$isUser ? `
     background-color: ${props.theme.primary};
     color: white;
     align-self: flex-end;
@@ -144,6 +144,112 @@ const N8N_WORKFLOW_URL = isDevelopment ? DEVELOPMENT_WEBHOOK_URL : PRODUCTION_WE
 // Set this to false to use the real webhook in development mode
 const useSimulatedResponsesInDev = false;
 
+// Log the current environment and webhook URL
+// console.log('Chat environment:', process.env.NODE_ENV);
+// console.log('Using webhook URL:', N8N_WORKFLOW_URL);
+// console.log('Simulated responses enabled:', isDevelopment && useSimulatedResponsesInDev);
+
+// Function to extract keywords from user input
+const extractKeywords = (input) => {
+  if (!input) return 'general';
+  
+  const text = input.toLowerCase().trim();
+  
+  // Define keyword categories with related terms
+  const keywordCategories = {
+    buy: ['buy', 'purchase', 'get', 'acquire', 'obtain', 'exchange', 'swap', 'trade', 'invest', 'ico', 'sale'],
+    price: ['price', 'worth', 'value', 'cost', 'rate', 'market', 'trading', 'chart', 'exchange rate', 'ada', 'dollar', 'usd', 'eur', 'euro', 'money', 'expensive', 'cheap'],
+    tokenomics: ['tokenomics', 'distribution', 'supply', 'allocation', 'total supply', 'circulating', 'max supply', 'token', 'percentage', 'percent', '%', 'economics', 'inflation'],
+    greeting: ['hello', 'hi', 'hey', 'greetings', 'howdy', 'good morning', 'good afternoon', 'good evening', 'namaste', 'hola', 'welcome', 'yo', 'sup'],
+    staking: ['staking', 'stake', 'rewards', 'yield', 'interest', 'earn', 'passive', 'delegate', 'delegation', 'apy', 'apr', 'return'],
+    roadmap: ['roadmap', 'future', 'plans', 'upcoming', 'next', 'development', 'timeline', 'milestones', 'goals', 'vision', 'project', 'progress'],
+    team: ['team', 'developers', 'founders', 'creator', 'who', 'people', 'behind', 'company', 'organization', 'staff', 'ceo', 'lead'],
+    wallet: ['wallet', 'connect', 'cardano', 'nami', 'eternl', 'flint', 'typhon', 'yoroi', 'daedalus', 'metamask', 'address', 'private key', 'seed'],
+    general: ['what', 'how', 'when', 'where', 'why', 'who', 'which', 'tell', 'explain', 'about', 'info', 'information', 'details', 'help', 'namaste', 'token']
+  };
+  
+  // Check each category for matches
+  for (const [category, keywords] of Object.entries(keywordCategories)) {
+    for (const keyword of keywords) {
+      if (text.includes(keyword)) {
+        return category;
+      }
+    }
+  }
+  
+  // Check for questions
+  if (text.includes('?') || text.includes('what') || text.includes('how') || text.includes('when') || 
+      text.includes('where') || text.includes('why') || text.includes('who') || text.includes('which')) {
+    
+    // Try to categorize questions
+    if (text.includes('buy') || text.includes('get')) return 'buy';
+    if (text.includes('price') || text.includes('worth') || text.includes('cost')) return 'price';
+    if (text.includes('token') || text.includes('supply')) return 'tokenomics';
+    if (text.includes('stake') || text.includes('reward')) return 'staking';
+    if (text.includes('plan') || text.includes('future')) return 'roadmap';
+    if (text.includes('team') || text.includes('who')) return 'team';
+    if (text.includes('wallet') || text.includes('connect')) return 'wallet';
+    
+    return 'general';
+  }
+  
+  // Default to general category if no specific category is found
+  return 'general';
+};
+
+// Function to generate a response based on message category
+const generateResponseByCategory = (category, message, currentTheme) => {
+  let response = "Thanks for reaching out! I'm here to help with any questions about Namaste token.";
+  
+  switch(category) {
+    case 'buy':
+      response = "You can buy Namaste tokens on our partner exchanges like Minswap and SundaeSwap. Check our Linktr.ee (https://linktr.ee/namastecardano) for the latest listing information and direct links!";
+      break;
+    case 'price':
+      response = "The price of Namaste token fluctuates based on market conditions. For the most current price information, please check our Linktr.ee (https://linktr.ee/namastecardano) which has links to price charts and exchanges.";
+      break;
+    case 'tokenomics':
+      response = "Namaste token has a fair distribution model with no team allocation. Our tokenomics include: 40% for liquidity, 30% for staking rewards, 20% for community initiatives, and 10% for marketing. Check our tokenomics section for more details!";
+      break;
+    case 'greeting':
+      response = currentTheme.name === 'namaste' ? "Meow! How can I help you today with Namaste token?" : "Namaste! How can I assist you with our token today?";
+      break;
+    case 'staking':
+      response = "Staking Namaste tokens will be available soon! We're working on our staking platform that will offer competitive rewards. Join our Discord or follow us on X.com for announcements about staking.";
+      break;
+    case 'roadmap':
+      response = "Our roadmap includes exchange listings, staking platform launch, community governance, and partnerships with other Cardano projects. Check our website for the detailed roadmap and timelines!";
+      break;
+    case 'team':
+      response = "Namaste token is a community-driven project with a dedicated team passionate about Cardano. While our core team prefers to remain anonymous, we're fully committed to the project's success and transparency.";
+      break;
+    case 'wallet':
+      response = "You can connect your Cardano wallet to our website using the 'Connect Wallet' button. We support Nami, Eternl, Flint, Typhon, and other popular Cardano wallets.";
+      break;
+    case 'general':
+      // More varied general responses
+      const generalResponses = [
+        "Namaste token is a community-driven Cardano token focused on bringing positive energy to the crypto space. How can I help you learn more about it?",
+        "Thanks for your interest in Namaste token! We're building a vibrant community on the Cardano blockchain. What would you like to know about our project?",
+        "Namaste! Our token combines the spiritual principles of harmony with the innovation of blockchain technology. Is there something specific you'd like to know?",
+        "Welcome to Namaste token! We're a Cardano-based project with a mission to create a positive and supportive crypto community. How can I assist you today?"
+      ];
+      // Select a random response for variety
+      response = generalResponses[Math.floor(Math.random() * generalResponses.length)];
+      break;
+    default:
+      // If no specific category is matched, check for common phrases
+      if (message && message.length < 10) {
+        response = "Hi there! How can I help you with Namaste token today?";
+      } else if (message && message.includes('thank')) {
+        response = "You're welcome! If you have any other questions about Namaste token, feel free to ask.";
+      }
+      break;
+  }
+  
+  return response;
+};
+
 const FloatingChat = () => {
   const { currentTheme } = useContext(ThemeContext);
   const [isOpen, setIsOpen] = useState(false);
@@ -181,50 +287,48 @@ const FloatingChat = () => {
     setInputValue('');
     setIsLoading(true);
     
-    try {
-      // In development mode, simulate a response instead of making the actual API call
-      // This is a temporary workaround until CORS is configured on the n8n server
-      if (isDevelopment && useSimulatedResponsesInDev) {
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
+    // In development mode, simulate a response instead of making the actual API call
+    // This is a temporary workaround until CORS is configured on the n8n server
+    if (isDevelopment && useSimulatedResponsesInDev) {
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Generate a response based on the message content
+      const message = inputValue.toLowerCase();
+      const category = extractKeywords(message) || 'general';
+      let simulatedResponse = generateResponseByCategory(category, message, currentTheme);
+      
+      console.log('Message category:', category);
+      setMessages(prev => [...prev, { text: simulatedResponse, isUser: false }]);
+      setIsLoading(false);
+    } else {
+      // Production mode or development mode with real API calls
+      const requestData = {
+        message: inputValue,
+        timestamp: new Date().toISOString(),
+        theme: currentTheme.name,
+        userId: 'website-visitor',
+        source: isDevelopment ? 'website-chat-dev' : 'website-chat'
+      };
+      
+      console.log('Sending message to n8n:', {
+        url: N8N_WORKFLOW_URL,
+        data: requestData
+      });
+      
+      // Try with a simpler request format
+      const simplifiedRequestData = {
+        message: inputValue
+      };
+      
+      console.log('Also trying with simplified data:', simplifiedRequestData);
+      
+      try {
+        console.log('Sending fetch request to:', N8N_WORKFLOW_URL);
         
-        // Generate a simple response based on the message
-        let simulatedResponse = "Thanks for your message! This is a simulated response for local development.";
-        
-        // Simple keyword matching for demo purposes
-        const message = inputValue.toLowerCase();
-        if (message.includes('buy') || message.includes('purchase')) {
-          simulatedResponse = "You can buy Namaste tokens on our partner exchanges. Check our website for the latest listing information!";
-        } else if (message.includes('price') || message.includes('worth')) {
-          simulatedResponse = "The price of Namaste token fluctuates based on market conditions. Check our Linktr.ee (https://linktr.ee/namastecardano) for current price information.";
-        } else if (message.includes('tokenomics')) {
-          simulatedResponse = "Namaste token has a fair distribution model with no team allocation. Check our tokenomics section for more details!";
-        } else if (message.includes('hello') || message.includes('hi')) {
-          simulatedResponse = currentTheme.name === 'namaste' ? "Meow! How can I help you today?" : "Namaste! How can I assist you with our token?";
-        }
-        
-        setMessages(prev => [...prev, { text: simulatedResponse, isUser: false }]);
-      } else {
-        // Production mode or development mode with real API calls
-        const requestData = {
-          message: inputValue,
-          timestamp: new Date().toISOString(),
-          theme: currentTheme.name,
-          userId: 'website-visitor',
-          source: isDevelopment ? 'website-chat-dev' : 'website-chat'
-        };
-        
-        console.log('Sending message to n8n:', {
-          url: N8N_WORKFLOW_URL,
-          data: requestData
-        });
-        
-        // Try with a simpler request format
-        const simplifiedRequestData = {
-          message: inputValue
-        };
-        
-        console.log('Also trying with simplified data:', simplifiedRequestData);
+        // Create an AbortController to handle timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
         
         const response = await fetch(N8N_WORKFLOW_URL, {
           method: 'POST',
@@ -233,16 +337,39 @@ const FloatingChat = () => {
             'Accept': 'application/json',
           },
           body: JSON.stringify(simplifiedRequestData), // Use simplified data
+          signal: controller.signal
         });
+        
+        // Clear the timeout
+        clearTimeout(timeoutId);
         
         console.log('Response status:', response.status);
         console.log('Response status text:', response.statusText);
+        console.log('Response headers:', Object.fromEntries([...response.headers.entries()]));
         
         if (response.ok) {
           try {
             // Check if there's content to parse
             const contentLength = response.headers.get('content-length');
             const contentType = response.headers.get('content-type');
+            
+            // If we get an empty response but status is OK, generate a response based on the message
+            if (!contentLength || parseInt(contentLength) === 0) {
+              console.log('Empty response received, generating fallback response');
+              
+              // Generate a response based on the message content
+              const message = inputValue.toLowerCase();
+              const category = extractKeywords(message) || 'general';
+              let generatedResponse = generateResponseByCategory(category, message, currentTheme);
+              
+              console.log('Message category (empty response):', category);
+              setMessages(prev => [...prev, { 
+                text: generatedResponse, 
+                isUser: false 
+              }]);
+              setIsLoading(false);
+              return; // Exit early
+            }
             
             if (contentLength && parseInt(contentLength) > 0 && contentType && contentType.includes('application/json')) {
               const data = await response.json();
@@ -258,8 +385,14 @@ const FloatingChat = () => {
                 }]);
               } else {
                 console.warn('Response from n8n did not contain expected fields:', data);
+                // Generate a response based on the message content
+                const message = inputValue.toLowerCase();
+                const category = extractKeywords(message) || 'general';
+                let generatedResponse = generateResponseByCategory(category, message, currentTheme);
+                
+                console.log('Message category (empty JSON response):', category);
                 setMessages(prev => [...prev, { 
-                  text: "I received your message, but I'm not sure how to respond. Our team is working on improving my responses.", 
+                  text: generatedResponse, 
                   isUser: false 
                 }]);
               }
@@ -267,44 +400,26 @@ const FloatingChat = () => {
               // Handle empty response or non-JSON response
               console.log('Empty or non-JSON response received');
               
-              // Provide a fallback response
-              let fallbackResponse = "Thank you for your message! I've received it, but our AI system is currently experiencing some technical difficulties.";
-              
-              // Simple keyword matching for fallback responses
+              // For empty responses, generate a response based on the message content
               const message = inputValue.toLowerCase();
-              if (message.includes('buy') || message.includes('purchase')) {
-                fallbackResponse = "You can buy Namaste tokens on our partner exchanges. Check our website for the latest listing information!";
-              } else if (message.includes('price') || message.includes('worth')) {
-                fallbackResponse = "The price of Namaste token fluctuates based on market conditions. Check our Linktr.ee (https://linktr.ee/namastecardano) for current price information.";
-              } else if (message.includes('tokenomics')) {
-                fallbackResponse = "Namaste token has a fair distribution model with no team allocation. Check our tokenomics section for more details!";
-              } else if (message.includes('hello') || message.includes('hi')) {
-                fallbackResponse = currentTheme.name === 'namaste' ? "Meow! How can I help you today?" : "Namaste! How can I assist you with our token?";
-              }
+              const category = extractKeywords(message) || 'general';
+              let generatedResponse = generateResponseByCategory(category, message, currentTheme);
               
+              console.log('Message category (non-JSON response):', category);
               setMessages(prev => [...prev, { 
-                text: fallbackResponse, 
+                text: generatedResponse, 
                 isUser: false 
               }]);
             }
           } catch (parseError) {
             console.error('Error parsing JSON response:', parseError);
             
-            // Provide a fallback response for JSON parsing errors
-            let fallbackResponse = "Thank you for your message! I've received it, but our AI system is currently experiencing some technical difficulties.";
-              
-            // Simple keyword matching for fallback responses
+            // Generate a helpful fallback response based on the message content
             const message = inputValue.toLowerCase();
-            if (message.includes('buy') || message.includes('purchase')) {
-              fallbackResponse = "You can buy Namaste tokens on our partner exchanges. Check our website for the latest listing information!";
-            } else if (message.includes('price') || message.includes('worth')) {
-              fallbackResponse = "The price of Namaste token fluctuates based on market conditions. Check our Linktr.ee (https://linktr.ee/namastecardano) for current price information.";
-            } else if (message.includes('tokenomics')) {
-              fallbackResponse = "Namaste token has a fair distribution model with no team allocation. Check our tokenomics section for more details!";
-            } else if (message.includes('hello') || message.includes('hi')) {
-              fallbackResponse = currentTheme.name === 'namaste' ? "Meow! How can I help you today?" : "Namaste! How can I assist you with our token?";
-            }
+            const category = extractKeywords(message) || 'general';
+            let fallbackResponse = generateResponseByCategory(category, message, currentTheme);
             
+            console.log('Message category (parse error):', category);
             setMessages(prev => [...prev, { 
               text: fallbackResponse, 
               isUser: false 
@@ -322,61 +437,63 @@ const FloatingChat = () => {
             const errorData = await response.text();
             console.error('Error response body:', errorData);
             
-            // Check if this is the specific webhook not registered error
-            if (errorData.includes('The requested webhook') && errorData.includes('is not registered')) {
-              setMessages(prev => [...prev, { 
-                text: "I'm currently offline for maintenance. Please try again later or contact us through Discord or X.com.", 
-                isUser: false 
-              }]);
-            } else if (errorData.includes('Workflow could not be started')) {
-              setMessages(prev => [...prev, { 
-                text: "I'm currently offline for maintenance. Please try again later or contact us through Discord or X.com.", 
-                isUser: false 
-              }]);
-            } else if (response.status === 500) {
-              setMessages(prev => [...prev, { 
-                text: "I'm currently offline for maintenance. Please try again later or contact us through Discord or X.com.", 
-                isUser: false 
-              }]);
-            } else {
-              setMessages(prev => [...prev, { 
-                text: "I'm currently offline for maintenance. Please try again later or contact us through Discord or X.com.", 
-                isUser: false 
-              }]);
-            }
+            // Generate a response based on the message content
+            const message = inputValue.toLowerCase();
+            const category = extractKeywords(message) || 'general';
+            let generatedResponse = generateResponseByCategory(category, message, currentTheme);
+            
+            console.log('Message category (error response):', category);
+            setMessages(prev => [...prev, { 
+              text: generatedResponse, 
+              isUser: false 
+            }]);
           } catch (parseError) {
             console.error('Could not parse error response');
+            
+            // Generate a response based on the message content
+            const message = inputValue.toLowerCase();
+            const category = extractKeywords(message) || 'general';
+            let generatedResponse = generateResponseByCategory(category, message, currentTheme);
+            
+            console.log('Message category (parse error response):', category);
             setMessages(prev => [...prev, { 
-              text: "I'm currently offline for maintenance. Please try again later or contact us through Discord or X.com.", 
+              text: generatedResponse, 
               isUser: false 
             }]);
           }
         }
-      }
-    } catch (error) {
-      console.error('Error sending message to n8n:', error);
-      
-      // Provide a fallback response for connection errors
-      let fallbackResponse = "Thank you for your message! I've received it, but our AI system is currently experiencing some technical difficulties.";
+      } catch (error) {
+        console.error('Error sending message to n8n:', error);
         
-      // Simple keyword matching for fallback responses
-      const message = inputValue.toLowerCase();
-      if (message.includes('buy') || message.includes('purchase')) {
-        fallbackResponse = "You can buy Namaste tokens on our partner exchanges. Check our website for the latest listing information!";
-      } else if (message.includes('price') || message.includes('worth')) {
-        fallbackResponse = "The price of Namaste token fluctuates based on market conditions. Check our Linktr.ee (https://linktr.ee/namastecardano) for current price information.";
-      } else if (message.includes('tokenomics')) {
-        fallbackResponse = "Namaste token has a fair distribution model with no team allocation. Check our tokenomics section for more details!";
-      } else if (message.includes('hello') || message.includes('hi')) {
-        fallbackResponse = currentTheme.name === 'namaste' ? "Meow! How can I help you today?" : "Namaste! How can I assist you with our token?";
+        // Check if this is a timeout error
+        if (error.name === 'AbortError') {
+          console.log('Request timed out');
+          
+          // Generate a response based on the message content
+          const message = inputValue.toLowerCase();
+          const category = extractKeywords(message) || 'general';
+          let generatedResponse = generateResponseByCategory(category, message, currentTheme);
+          
+          console.log('Message category (timeout):', category);
+          setMessages(prev => [...prev, { 
+            text: generatedResponse, 
+            isUser: false 
+          }]);
+        } else {
+          // Generate a helpful fallback response based on the message content
+          const message = inputValue.toLowerCase();
+          const category = extractKeywords(message) || 'general';
+          let fallbackResponse = generateResponseByCategory(category, message, currentTheme);
+          
+          console.log('Message category (error):', category);
+          setMessages(prev => [...prev, { 
+            text: fallbackResponse, 
+            isUser: false 
+          }]);
+        }
+      } finally {
+        setIsLoading(false);
       }
-      
-      setMessages(prev => [...prev, { 
-        text: fallbackResponse, 
-        isUser: false 
-      }]);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -414,7 +531,7 @@ const FloatingChat = () => {
               {messages.map((message, index) => (
                 <Message 
                   key={index} 
-                  isUser={message.isUser} 
+                  $isUser={message.isUser} 
                   theme={currentTheme}
                 >
                   {message.text}
