@@ -85,11 +85,9 @@ const PieChart = styled.div`
   height: 300px;
   border-radius: 50%;
   background: conic-gradient(
-    ${props => props.theme.primary} 0% 40%,
-    ${props => props.theme.accent} 40% 60%,
-    #9c88ff 60% 75%,
-    #fbc531 75% 90%,
-    #4cd137 90% 100%
+    ${props => props.theme.primary} 0% 65%,
+    ${props => props.theme.accent} 65% 95%,
+    #9c88ff 95% 100%
   );
   margin: 0 auto;
   position: relative;
@@ -159,45 +157,33 @@ const tokenomicsData = [
     content: "1,000,000,000 NAMASTE tokens have been minted, with no ability to mint additional tokens."
   },
   {
-    title: "Token Utility",
-    content: "NAMASTE tokens can be used for governance voting, accessing premium community features, and participating in our staking rewards program."
+    title: "Fair Launch",
+    content: "Namaste Token was fair launched on SNEK.fun, with 65% of tokens distributed to community participants."
   },
   {
-    title: "Deflationary Mechanism",
-    content: "A small percentage of each transaction is automatically burned, creating a deflationary effect that increases scarcity over time."
+    title: "Liquidity & Listings",
+    content: "30% of tokens support liquidity pools, while 5% are reserved for integrations and CEX listings."
   }
 ];
 
 const distributionData = [
   {
-    label: "Community & Airdrops",
-    percentage: "40%",
+    label: "Community Distribution",
+    percentage: "65%",
     color: "#61dafb",
-    details: "40% of the total supply is allocated to community initiatives, airdrops, and rewards for active participation in the ecosystem."
+    details: "65% were distributed to community participants from the Snek Fun launch."
   },
   {
-    label: "Liquidity Pool",
-    percentage: "20%",
+    label: "Liquidity Pools",
+    percentage: "30%",
     color: "#ff6b6b",
-    details: "20% is locked in liquidity pools to ensure trading stability and reduce price volatility."
+    details: "30% of the tokens to support liquidity pools."
   },
   {
-    label: "Development Fund",
-    percentage: "15%",
+    label: "Integrations & CEX Listings",
+    percentage: "5%",
     color: "#9c88ff",
-    details: "15% is allocated to fund ongoing development, improvements, and new features for the Namaste ecosystem."
-  },
-  {
-    label: "Marketing",
-    percentage: "15%",
-    color: "#fbc531",
-    details: "15% is dedicated to marketing efforts, partnerships, and community growth initiatives."
-  },
-  {
-    label: "Team & Advisors",
-    percentage: "10%",
-    color: "#4cd137",
-    details: "10% is allocated to the team and advisors, with a vesting period to ensure long-term commitment."
+    details: "5% are reserved for integrations and CEX listings."
   }
 ];
 
