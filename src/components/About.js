@@ -176,19 +176,15 @@ const About = () => {
           animate={inView ? "visible" : "hidden"}
         >
           <Paragraph variants={itemVariants}>
-            Namaste Token is the chillest meme coin in the Cardano ecosystem, delivering good vibes and big dreams to the blockchain. Born from the belief that crypto can ditch the stress, we mix mindfulness, memes, and moonshots.
+            Spawned from the chaos of crypto hype, Namaste Token rises like a zen middle finger to the noise. No screeching 'MOON' or sweaty FOMO here, just a crew of chill degenerates vibing on Cardano's eco-friendly blockchain. Forged in dank memes and a disdain for drama, it's the token that smirks while markets sob.
           </Paragraph>
           
           <Paragraph variants={itemVariants}>
-            Picture your yoga buddy who also loves to HODL—while others chase anxiety, we target calm and gains, all powered by Cardano's eco-friendly network.
+            The mission? To slap stress into submission and stack tokens with a laid-back swagger. Picture trolls melting as Namaste flips their panic into peace, one savage quip at a time. We're not just green—we're the smoothest operators in the game, holding hard while others chase pumps like headless chickens.
           </Paragraph>
           
           <Paragraph variants={itemVariants}>
-            Fair launched on SNEK.fun, we unite a crew of chill HODLers ready to rise together. Grab your mat, join the party, and let's meditate our way to the top!
-          </Paragraph>
-          
-          <Paragraph variants={itemVariants}>
-            Namaste, We Slay!
+            Namaste Token isn't just a coin—it's a vibe, a tribe of meme-wielding monks proving you can thrive in this madhouse without losing your soul—or your sense of humor.
           </Paragraph>
         </AboutText>
         
