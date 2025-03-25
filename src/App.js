@@ -1,6 +1,6 @@
 import React, { useContext, useEffect } from 'react';
 import styled from 'styled-components';
-import { ThemeContext } from './context/ThemeContext';
+import { ThemeContext, ThemeProvider } from './context/ThemeContext';
 import { WalletContextProvider } from './context/WalletContext';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
@@ -14,6 +14,8 @@ import Footer from './components/Footer';
 import ScrollProgress from './components/ScrollProgress';
 import CatThemeElements from './components/CatThemeElements';
 import FloatingChat from './components/FloatingChat';
+import { AuthProvider } from './context/AuthContext';
+import { GlobalStyle } from './styles/GlobalStyle';
 
 const AppContainer = styled.div`
   background-color: ${props => props.theme.background};
@@ -49,21 +51,26 @@ function App() {
   }, []);
 
   return (
-    <Router>
-      <WalletContextProvider>
-        <AppContainer theme={currentTheme}>
-          <CatThemeElements />
-          <Navbar />
-          <ScrollProgress />
-          <Routes>
-            <Route path="/" element={<MainPage />} />
-            <Route path="/memes" element={<Memes />} />
-          </Routes>
-          <Footer />
-          <FloatingChat />
-        </AppContainer>
-      </WalletContextProvider>
-    </Router>
+    <ThemeProvider>
+      <AuthProvider>
+        <GlobalStyle />
+        <Router>
+          <WalletContextProvider>
+            <AppContainer>
+              <CatThemeElements />
+              <Navbar />
+              <ScrollProgress />
+              <Routes>
+                <Route path="/" element={<MainPage />} />
+                <Route path="/memes" element={<Memes />} />
+              </Routes>
+              <Footer />
+              <FloatingChat />
+            </AppContainer>
+          </WalletContextProvider>
+        </Router>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

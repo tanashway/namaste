@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
+import { ThemeProvider as StyledThemeProvider } from 'styled-components';
 
 // Define theme colors
 export const themes = {
@@ -67,7 +68,9 @@ export const ThemeProvider = ({ children }) => {
 
   return (
     <ThemeContext.Provider value={{ currentTheme, changeTheme }}>
-      {children}
+      <StyledThemeProvider theme={currentTheme}>
+        {children}
+      </StyledThemeProvider>
     </ThemeContext.Provider>
   );
 };

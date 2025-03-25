@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWalletContext } from '../context/WalletContext';
+import { useAuth } from '../context/AuthContext';
 import { FaWallet, FaCheck, FaTimes } from 'react-icons/fa';
 
 const ConnectButton = styled(motion.button)`
@@ -113,6 +114,8 @@ const WalletConnect = ({ theme, isNamasteTheme }) => {
     getAvailableWallets 
   } = useWalletContext();
   
+  const { login, logout: authLogout } = useAuth();
+  
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [availableWallets, setAvailableWallets] = useState([]);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -129,18 +132,28 @@ const WalletConnect = ({ theme, isNamasteTheme }) => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [getAvailableWallets]);
+
+  // Effect to handle wallet connection state
+  useEffect(() => {
+    if (isConnected && walletAddress) {
+      login(walletAddress);
+    }
+  }, [isConnected, walletAddress, login]);
   
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
   
   const handleConnectWallet = async (wallet) => {
-    await connectWallet(wallet);
-    setIsDropdownOpen(false);
+    const success = await connectWallet(wallet);
+    if (success) {
+      setIsDropdownOpen(false);
+    }
   };
   
   const handleDisconnect = async () => {
     await disconnectWallet();
+    authLogout();
     setIsDropdownOpen(false);
   };
   

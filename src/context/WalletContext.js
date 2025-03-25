@@ -10,6 +10,22 @@ export const WalletContextProvider = ({ children }) => {
   const [walletAddress, setWalletAddress] = useState('');
   const [walletName, setWalletName] = useState('');
   const [availableWallets, setAvailableWallets] = useState([]);
+  const [connecting, setConnecting] = useState(false);
+  
+  const initializeWallet = async () => {
+    try {
+      await weld.init();
+      
+      // Check if already connected
+      if (weld.wallet.state.isConnected && weld.wallet.state.changeAddress) {
+        setIsConnected(true);
+        setWalletName(weld.wallet.state.name || '');
+        setWalletAddress(weld.wallet.state.changeAddress);
+      }
+    } catch (error) {
+      console.error('Failed to initialize wallet:', error);
+    }
+  };
   
   useEffect(() => {
     // Initialize Weld
@@ -19,7 +35,7 @@ export const WalletContextProvider = ({ children }) => {
       autoConnectTimeout: 3000,
     });
     
-    weld.init();
+    initializeWallet();
     
     // Subscribe to wallet state changes
     const unsubscribe = weld.wallet.subscribeWithSelector(
@@ -31,7 +47,13 @@ export const WalletContextProvider = ({ children }) => {
       (state) => {
         setIsConnected(state.isConnected);
         setWalletName(state.name || '');
-        setWalletAddress(state.changeAddress || '');
+        if (state.changeAddress) {
+          setWalletAddress(state.changeAddress);
+          setConnecting(false);
+        } else if (!state.isConnected) {
+          setWalletAddress('');
+          setConnecting(false);
+        }
       }
     );
     
@@ -53,10 +75,33 @@ export const WalletContextProvider = ({ children }) => {
   // Connect to wallet
   const connectWallet = async (walletName) => {
     try {
+      setConnecting(true);
       await weld.wallet.connect(walletName);
-      return true;
+      
+      // Wait for the wallet to be connected
+      let attempts = 0;
+      const maxAttempts = 30; // Increased max attempts
+      const delayMs = 100; // Decreased delay
+      
+      while (attempts < maxAttempts) {
+        if (weld.wallet.state.isConnected && weld.wallet.state.changeAddress) {
+          setWalletAddress(weld.wallet.state.changeAddress);
+          setIsConnected(true);
+          setWalletName(walletName);
+          setConnecting(false);
+          return true;
+        }
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+        attempts++;
+      }
+      
+      throw new Error('Failed to get wallet address');
     } catch (error) {
       console.error('Failed to connect wallet:', error);
+      setConnecting(false);
+      setIsConnected(false);
+      setWalletAddress('');
+      setWalletName('');
       return false;
     }
   };
@@ -65,6 +110,10 @@ export const WalletContextProvider = ({ children }) => {
   const disconnectWallet = async () => {
     try {
       await weld.wallet.disconnect();
+      setWalletAddress('');
+      setIsConnected(false);
+      setWalletName('');
+      setConnecting(false);
       return true;
     } catch (error) {
       console.error('Failed to disconnect wallet:', error);
@@ -86,7 +135,8 @@ export const WalletContextProvider = ({ children }) => {
         connectWallet,
         disconnectWallet,
         getAvailableWallets,
-        weld // Expose the weld instance for advanced usage
+        connecting,
+        weld
       }}
     >
       {children}
