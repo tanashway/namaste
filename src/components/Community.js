@@ -99,13 +99,13 @@ const socialLinks = [
   {
     name: "X.com",
     icon: <FaTwitter />,
-    url: "#",
+    url: "https://x.com/namastecardano",
     color: "#1DA1F2"
   },
   {
     name: "Discord",
     icon: <FaDiscord />,
-    url: "#",
+    url: "https://discord.gg/7ZyWUGaYJF",
     color: "#7289DA"
   },
   {
