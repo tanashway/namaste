@@ -182,6 +182,19 @@ const Navbar = () => {
   const location = useLocation();
   const isHomePage = location.pathname === '/';
   
+  const handleNavClick = (e, sectionId) => {
+    e.preventDefault();
+    if (!isHomePage) {
+      window.location.href = '/#' + sectionId;
+    } else {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+    setIsOpen(false);
+  };
+  
   // Track scroll for navbar background opacity
   useEffect(() => {
     const handleScroll = () => {
@@ -229,12 +242,14 @@ const Navbar = () => {
       <NavLinks>
         {isHomePage ? (
           <>
-            <NavLink href="#about">About</NavLink>
-            <NavLink href="#features">Features</NavLink>
-            <NavLink href="#tokenomics">Tokenomics</NavLink>
-            <NavLink href="#community">Community</NavLink>
+            <NavLink href="#about" onClick={(e) => handleNavClick(e, 'about')}>About</NavLink>
+            <NavLink href="#features" onClick={(e) => handleNavClick(e, 'features')}>Features</NavLink>
+            <NavLink href="#tokenomics" onClick={(e) => handleNavClick(e, 'tokenomics')}>Tokenomics</NavLink>
+            <NavLink href="#community" onClick={(e) => handleNavClick(e, 'community')}>Community</NavLink>
           </>
-        ) : null}
+        ) : (
+          <RouterLink to="/">Home</RouterLink>
+        )}
         <RouterLink to="/memes">Memes</RouterLink>
       </NavLinks>
 
@@ -294,13 +309,15 @@ const Navbar = () => {
           >
             {isHomePage ? (
               <>
-                <MobileNavLink href="#about" onClick={() => setIsOpen(false)}>About</MobileNavLink>
-                <MobileNavLink href="#features" onClick={() => setIsOpen(false)}>Features</MobileNavLink>
-                <MobileNavLink href="#tokenomics" onClick={() => setIsOpen(false)}>Tokenomics</MobileNavLink>
-                <MobileNavLink href="#community" onClick={() => setIsOpen(false)}>Community</MobileNavLink>
+                <MobileNavLink href="#about" onClick={(e) => handleNavClick(e, 'about')}>About</MobileNavLink>
+                <MobileNavLink href="#features" onClick={(e) => handleNavClick(e, 'features')}>Features</MobileNavLink>
+                <MobileNavLink href="#tokenomics" onClick={(e) => handleNavClick(e, 'tokenomics')}>Tokenomics</MobileNavLink>
+                <MobileNavLink href="#community" onClick={(e) => handleNavClick(e, 'community')}>Community</MobileNavLink>
               </>
-            ) : null}
-            <MobileRouterLink to="/memes" onClick={() => setIsOpen(false)}>Memes</MobileRouterLink>
+            ) : (
+              <MobileRouterLink to="/">Home</MobileRouterLink>
+            )}
+            <MobileRouterLink to="/memes">Memes</MobileRouterLink>
           </MobileMenu>
         )}
       </AnimatePresence>

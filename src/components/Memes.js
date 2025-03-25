@@ -248,14 +248,22 @@ const Memes = () => {
   useEffect(() => {
     loadMemes();
     
-    // Subscribe to real-time updates
-    const memesSubscription = supabase
-      .channel('public:memes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'memes' }, handleMemeChange)
+    // Set up real-time subscription
+    const subscription = supabase
+      .from('memes')
+      .on('INSERT', (payload) => {
+        setMemes(prev => [payload.new, ...prev]);
+      })
+      .on('UPDATE', (payload) => {
+        setMemes(prev => prev.map(meme => 
+          meme.id === payload.new.id ? payload.new : meme
+        ));
+      })
       .subscribe();
 
+    // Cleanup subscription
     return () => {
-      supabase.removeChannel(memesSubscription);
+      subscription.unsubscribe();
     };
   }, []);
 
@@ -271,16 +279,6 @@ const Memes = () => {
     } catch (error) {
       console.error('Error loading memes:', error);
       setError('Failed to load memes. Please try again later.');
-    }
-  };
-
-  const handleMemeChange = (payload) => {
-    if (payload.eventType === 'INSERT') {
-      setMemes(prev => [payload.new, ...prev]);
-    } else if (payload.eventType === 'UPDATE') {
-      setMemes(prev => prev.map(meme => 
-        meme.id === payload.new.id ? payload.new : meme
-      ));
     }
   };
 
