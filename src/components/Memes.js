@@ -1,10 +1,10 @@
 import React, { useContext, useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { ThemeContext } from '../context/ThemeContext';
-import { FaTimes, FaHeart, FaUpload, FaTrophy } from 'react-icons/fa';
-import { supabase, uploadImage, addMeme, fetchMemes, toggleLike, getImageUrl } from '../lib/supabase';
+import { FaHeart, FaUpload, FaTrophy } from 'react-icons/fa';
+import { supabase } from '../lib/supabase';
 
 const MemesSection = styled.section`
   padding: 6rem 2rem;
@@ -188,14 +188,57 @@ const ErrorMessage = styled.p`
   margin-top: 0.5rem;
 `;
 
+const LoadingSpinner = styled.div`
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 1s linear infinite;
+  margin-right: 0.5rem;
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
+const WalletInput = styled.input`
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid ${props => props.theme.secondary};
+  border-radius: 8px;
+  background: ${props => props.theme.background};
+  color: ${props => props.theme.text};
+  font-size: 1rem;
+  margin: 1rem 0;
+  
+  &:focus {
+    border-color: ${props => props.theme.primary};
+    outline: none;
+    box-shadow: 0 0 0 2px ${props => props.theme.primary}33;
+  }
+
+  &::placeholder {
+    color: ${props => props.theme.text}88;
+  }
+`;
+
+const ErrorText = styled.p`
+  color: #ff6b6b;
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+`;
+
 const Memes = () => {
   const { currentTheme } = useContext(ThemeContext);
-  const [selectedMeme, setSelectedMeme] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const [walletAddress, setWalletAddress] = useState('');
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [memes, setMemes] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef(null);
   const [ref, inView] = useInView({
     threshold: 0.1,
@@ -207,7 +250,7 @@ const Memes = () => {
     
     // Subscribe to real-time updates
     const memesSubscription = supabase
-      .channel('memes')
+      .channel('public:memes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'memes' }, handleMemeChange)
       .subscribe();
 
@@ -218,11 +261,16 @@ const Memes = () => {
 
   const loadMemes = async () => {
     try {
-      const memesData = await fetchMemes();
-      setMemes(memesData);
+      const { data, error } = await supabase
+        .from('memes')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setMemes(data || []);
     } catch (error) {
-      setError('Failed to load memes');
       console.error('Error loading memes:', error);
+      setError('Failed to load memes. Please try again later.');
     }
   };
 
@@ -239,7 +287,7 @@ const Memes = () => {
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 5000000) { // 5MB limit
+      if (file.size > 5000000) {
         setError('File size must be less than 5MB');
         return;
       }
@@ -258,7 +306,12 @@ const Memes = () => {
       return;
     }
 
-    setIsLoading(true);
+    if (!walletAddress.startsWith('addr1')) {
+      setError('Please enter a valid Cardano wallet address');
+      return;
+    }
+
+    setIsSubmitting(true);
     setError('');
 
     try {
@@ -267,40 +320,77 @@ const Memes = () => {
       const fileName = `${Date.now()}-${walletAddress.slice(0, 10)}.jpg`;
       
       // Upload image to Supabase Storage
-      await uploadImage(file, fileName);
-      const imageUrl = getImageUrl(fileName);
-      
+      const { data: uploadData, error: uploadError } = await supabase
+        .storage
+        .from('memes')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: urlData } = supabase
+        .storage
+        .from('memes')
+        .getPublicUrl(fileName);
+
       // Add meme to database
-      await addMeme({
-        image_url: imageUrl,
-        wallet_address: walletAddress
-      });
+      const { error: dbError } = await supabase
+        .from('memes')
+        .insert([{
+          image_url: urlData.publicUrl,
+          wallet_address: walletAddress,
+          likes: 0
+        }]);
+
+      if (dbError) throw dbError;
 
       // Reset form
       setPreviewImage(null);
       setWalletAddress('');
       fileInputRef.current.value = '';
+      setError('');
     } catch (error) {
-      setError('Failed to upload meme. Please try again.');
       console.error('Error uploading meme:', error);
+      setError('Failed to upload meme. Please try again.');
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  const handleLike = async (id) => {
+  const handleLike = async (memeId, currentLikes, isLiked) => {
     if (!walletAddress) {
       setError('Please enter your wallet address to like memes');
       return;
     }
 
     try {
-      const isLiked = await toggleLike(id, walletAddress);
-      // The real-time subscription will handle the UI update
+      const { error } = await supabase
+        .from('meme_likes')
+        .upsert([
+          {
+            meme_id: memeId,
+            wallet_address: walletAddress,
+            liked: !isLiked
+          }
+        ], { onConflict: ['meme_id', 'wallet_address'] });
+
+      if (error) throw error;
+
+      // Update likes count
+      await supabase
+        .from('memes')
+        .update({ likes: isLiked ? currentLikes - 1 : currentLikes + 1 })
+        .eq('id', memeId);
+
     } catch (error) {
-      setError('Failed to update like');
       console.error('Error updating like:', error);
+      setError('Failed to update like. Please try again.');
     }
+  };
+
+  const truncateAddress = (address) => {
+    if (!address) return '';
+    return `${address.slice(0, 8)}...${address.slice(-4)}`;
   };
 
   return (
@@ -364,7 +454,7 @@ const Memes = () => {
             <PreviewImage src={previewImage} alt="Preview" />
           )}
           
-          <Input
+          <WalletInput
             type="text"
             placeholder="Enter your Cardano wallet address"
             value={walletAddress}
@@ -372,16 +462,22 @@ const Memes = () => {
             theme={currentTheme}
           />
           
-          {error && <ErrorMessage>{error}</ErrorMessage>}
+          {error && <ErrorText>{error}</ErrorText>}
           
           <UploadButton
             type="submit"
             theme={currentTheme}
-            disabled={!previewImage || !walletAddress || isLoading}
+            disabled={!previewImage || !walletAddress || isSubmitting}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            {isLoading ? 'Uploading...' : 'Submit Meme'}
+            {isSubmitting ? (
+              <>
+                <LoadingSpinner /> Uploading...
+              </>
+            ) : (
+              'Submit Meme'
+            )}
           </UploadButton>
         </UploadForm>
       </UploadSection>
@@ -413,12 +509,12 @@ const Memes = () => {
             <MemeImage src={meme.image_url} alt="Contest Meme" />
             <MemeInfo theme={currentTheme}>
               <WalletAddress theme={currentTheme}>
-                {meme.wallet_address.slice(0, 10)}...
+                {truncateAddress(meme.wallet_address)}
               </WalletAddress>
               <LikeButton
                 theme={currentTheme}
                 $liked={meme.liked}
-                onClick={() => handleLike(meme.id)}
+                onClick={() => handleLike(meme.id, meme.likes, meme.liked)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
