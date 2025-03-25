@@ -312,42 +312,9 @@ const Memes = () => {
     preview: null
   });
   const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState(null);
 
   useEffect(() => {
     fetchMemes();
-    // Set up real-time subscription
-    const channel = supabase
-      .channel('memes-channel')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'memes'
-        },
-        (payload) => {
-          setMemes(prev => [payload.new, ...prev]);
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'memes'
-        },
-        (payload) => {
-          setMemes(prev => prev.map(meme => 
-            meme.id === payload.new.id ? payload.new : meme
-          ));
-        }
-      )
-      .subscribe();
-
-    return () => {
-      channel.unsubscribe();
-    };
   }, []);
 
   useEffect(() => {
@@ -387,58 +354,31 @@ const Memes = () => {
 
       setLikeCounts(counts);
       setMemes(data);
-    } catch (err) {
-      setError(err.message);
-    } finally {
       setLoading(false);
-    }
-  };
-
-  const handleLike = async (memeId) => {
-    if (!userIP) return;
-
-    try {
-      // Get current meme data
-      const { data: meme, error: fetchError } = await supabase
-        .from('memes')
-        .select('*')
-        .eq('id', memeId)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      const newCount = (meme.likes || 0) + 1;
-
-      // Update local state immediately for better UX
-      setLikeCounts(prev => ({ ...prev, [memeId]: newCount }));
-
-      // Update meme likes count
-      const { error: updateError } = await supabase
-        .from('memes')
-        .update({ likes: newCount })
-        .eq('id', memeId);
-
-      if (updateError) throw updateError;
     } catch (err) {
-      console.error('Error updating like:', err);
-      // Revert local state on error
-      setLikeCounts(prev => ({ ...prev, [memeId]: likeCounts[memeId] }));
+      console.error('Error fetching memes:', err);
+      setError('Failed to load memes');
+      setLoading(false);
     }
   };
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      if (file.size > 5000000) {
-        setError('File size must be less than 5MB');
-        return;
-      }
-      
-      const reader = new FileReader();
-      reader.onload = (e) => setUploadData({ ...uploadData, preview: e.target.result });
-      reader.readAsDataURL(file);
-      setError('');
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file');
+      return;
     }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setUploadData({
+        image: file,
+        preview: reader.result
+      });
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async (e) => {
@@ -487,19 +427,47 @@ const Memes = () => {
 
       if (dbError) throw dbError;
 
-      // Reset form
-      setUploadData({
-        image: null,
-        preview: null
-      });
+      // Reset form and fetch updated memes
+      setUploadData({ image: null, preview: null });
       setManualWalletAddress('');
       fileInputRef.current.value = '';
       setError('');
+      fetchMemes();
     } catch (error) {
       console.error('Error uploading meme:', error);
       setError('Failed to upload meme. Please try again.');
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleLike = async (memeId) => {
+    try {
+      // Get current meme data
+      const { data: meme, error: fetchError } = await supabase
+        .from('memes')
+        .select('*')
+        .eq('id', memeId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const newCount = (meme.likes || 0) + 1;
+
+      // Update local state immediately for better UX
+      setLikeCounts(prev => ({ ...prev, [memeId]: newCount }));
+
+      // Update meme likes count
+      const { error: updateError } = await supabase
+        .from('memes')
+        .update({ likes: newCount })
+        .eq('id', memeId);
+
+      if (updateError) throw updateError;
+    } catch (err) {
+      console.error('Error updating like:', err);
+      // Revert local state on error
+      setLikeCounts(prev => ({ ...prev, [memeId]: likeCounts[memeId] }));
     }
   };
 
@@ -512,6 +480,10 @@ const Memes = () => {
     await disconnectWallet();
     logout();
   };
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <MemesSection id="memes" ref={ref}>
@@ -580,49 +552,17 @@ const Memes = () => {
             onChange={(e) => setManualWalletAddress(e.target.value)}
             required
           />
-          
           <FileInput
             type="file"
             accept="image/*"
             onChange={handleFileSelect}
             ref={fileInputRef}
           />
-          
-          <UploadButton
-            type="button"
-            theme={theme}
-            onClick={() => fileInputRef.current.click()}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            disabled={!isConnected || connecting}
-          >
-            <FaUpload /> {connecting ? 'Connecting Wallet...' : 'Select Meme Image'}
-          </UploadButton>
-          
-          {uploadData.preview && (
-            <PreviewImage src={uploadData.preview} alt="Preview" />
-          )}
-          
-          {error && <ErrorText>{error}</ErrorText>}
-          
-          <UploadButton
-            type="submit"
-            theme={theme}
-            disabled={!uploadData.preview || !isConnected || connecting || uploading}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            {uploading ? (
-              <>
-                <LoadingSpinner /> Uploading...
-              </>
-            ) : connecting ? (
-              'Connecting Wallet...'
-            ) : (
-              'Submit Meme'
-            )}
+          <UploadButton type="submit" disabled={uploading}>
+            {uploading ? 'Uploading...' : 'Upload Meme'}
           </UploadButton>
         </UploadForm>
+        {error && <ErrorMessage>{error}</ErrorMessage>}
       </UploadSection>
 
       <MemeGrid
