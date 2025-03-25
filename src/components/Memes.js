@@ -80,18 +80,46 @@ const UploadForm = styled.form`
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
 `;
 
-const Input = styled.input`
-  padding: 0.8rem;
-  border: 2px solid ${props => props.theme.secondary};
+const WalletInput = styled.input`
+  width: 100%;
+  padding: 12px;
+  border: 2px solid ${props => props.theme.primary};
   border-radius: 8px;
-  background: ${props => props.theme.background};
+  background: transparent;
   color: ${props => props.theme.text};
-  
+  font-size: 1rem;
+  outline: none;
+
   &:focus {
-    border-color: ${props => props.theme.primary};
-    outline: none;
+    border-color: ${props => props.theme.accent};
+  }
+
+  &::placeholder {
+    color: ${props => props.theme.text}88;
+  }
+`;
+
+const FileInputContainer = styled.div`
+  width: 100%;
+  text-align: center;
+`;
+
+const FileInputLabel = styled.label`
+  display: inline-block;
+  padding: 12px 24px;
+  background: ${props => props.theme.primary};
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: ${props => props.theme.accent};
   }
 `;
 
@@ -99,31 +127,37 @@ const FileInput = styled.input`
   display: none;
 `;
 
-const UploadButton = styled(motion.button)`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 1rem;
-  background: ${props => props.theme.primary};
+const UploadButton = styled.button`
+  width: 100%;
+  padding: 12px;
+  background: ${props => props.theme.accent};
   color: white;
   border: none;
   border-radius: 8px;
+  font-size: 1rem;
   cursor: pointer;
-  font-weight: 600;
-  
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  &:hover {
+    background: ${props => props.theme.primary};
+  }
+
   &:disabled {
-    opacity: 0.7;
+    background: #666;
     cursor: not-allowed;
   }
 `;
 
 const PreviewImage = styled.img`
-  max-width: 100%;
+  max-width: 300px;
   max-height: 300px;
-  object-fit: contain;
-  margin: 1rem 0;
+  margin: 1rem auto;
   border-radius: 8px;
+  display: block;
 `;
 
 const MemeGrid = styled(motion.div)`
@@ -186,8 +220,9 @@ const LikeCount = styled.span`
   margin-left: 0.5rem;
 `;
 
-const ErrorMessage = styled.p`
-  color: #ff6b6b;
+const ErrorMessage = styled.div`
+  color: #ff4444;
+  text-align: center;
   margin-top: 0.5rem;
 `;
 
@@ -206,33 +241,6 @@ const LoadingSpinner = styled.div`
       transform: rotate(360deg);
     }
   }
-`;
-
-const WalletInput = styled.input`
-  width: 100%;
-  padding: 1rem;
-  border: 2px solid ${props => props.theme.secondary};
-  border-radius: 8px;
-  background: ${props => props.theme.background};
-  color: ${props => props.theme.text};
-  font-size: 1rem;
-  margin: 1rem 0;
-  
-  &:focus {
-    border-color: ${props => props.theme.primary};
-    outline: none;
-    box-shadow: 0 0 0 2px ${props => props.theme.primary}33;
-  }
-
-  &::placeholder {
-    color: ${props => props.theme.text}88;
-  }
-`;
-
-const ErrorText = styled.p`
-  color: #ff6b6b;
-  margin: 0.5rem 0;
-  font-size: 0.9rem;
 `;
 
 const LoginButton = styled(motion.button)`
@@ -539,31 +547,58 @@ const Memes = () => {
         <p>🎨 Theme: Create the funniest Namaste Cat meme</p>
       </ContestInfo>
 
-      <UploadSection
-        initial={{ opacity: 0, y: 20 }}
-        animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-        transition={{ duration: 0.5, delay: 0.4 }}
-      >
-        <UploadForm onSubmit={handleSubmit}>
-          <WalletInput
-            type="text"
-            placeholder="Enter your wallet address"
-            value={manualWalletAddress}
-            onChange={(e) => setManualWalletAddress(e.target.value)}
-            required
-          />
-          <FileInput
-            type="file"
-            accept="image/*"
-            onChange={handleFileSelect}
-            ref={fileInputRef}
-          />
-          <UploadButton type="submit" disabled={uploading}>
-            {uploading ? 'Uploading...' : 'Upload Meme'}
-          </UploadButton>
-        </UploadForm>
-        {error && <ErrorMessage>{error}</ErrorMessage>}
-      </UploadSection>
+      {isConnected ? (
+        <UploadSection
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
+          <UploadForm onSubmit={handleSubmit}>
+            <WalletInput
+              type="text"
+              placeholder="Enter your wallet address"
+              value={manualWalletAddress}
+              onChange={(e) => setManualWalletAddress(e.target.value)}
+              required
+            />
+            
+            <FileInputContainer>
+              <FileInputLabel>
+                <FileInput
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileSelect}
+                  ref={fileInputRef}
+                />
+                {uploadData.preview ? 'Change Image' : 'Select Meme Image'}
+              </FileInputLabel>
+            </FileInputContainer>
+
+            {uploadData.preview && (
+              <PreviewImage src={uploadData.preview} alt="Preview" />
+            )}
+
+            <UploadButton type="submit" disabled={uploading || !uploadData.preview}>
+              {uploading ? (
+                <>
+                  <span>Uploading...</span>
+                </>
+              ) : (
+                'Submit Meme'
+              )}
+            </UploadButton>
+          </UploadForm>
+          {error && <ErrorMessage>{error}</ErrorMessage>}
+        </UploadSection>
+      ) : (
+        <Description
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
+          Please connect your wallet to participate in the meme contest.
+        </Description>
+      )}
 
       <MemeGrid
         variants={{

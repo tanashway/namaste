@@ -1,7 +1,7 @@
 import React, { useContext, useEffect } from 'react';
 import styled from 'styled-components';
 import { ThemeContext, ThemeProvider } from './context/ThemeContext';
-import { WalletContextProvider } from './context/WalletContext';
+import { WalletProvider } from './context/WalletContext';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
@@ -17,7 +17,7 @@ import FloatingChat from './components/FloatingChat';
 import { AuthProvider } from './context/AuthContext';
 import { GlobalStyle } from './styles/GlobalStyle';
 
-const AppContainer = styled.div`
+const AppContainerStyled = styled.div`
   background-color: ${props => props.theme.background};
   color: ${props => props.theme.text};
   transition: background-color 0.3s ease, color 0.3s ease;
@@ -52,11 +52,11 @@ function App() {
 
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <GlobalStyle />
-        <Router>
-          <WalletContextProvider>
-            <AppContainer>
+      <WalletProvider>
+        <AuthProvider>
+          <GlobalStyle />
+          <Router>
+            <AppContainerStyled>
               <CatThemeElements />
               <Navbar />
               <ScrollProgress />
@@ -66,10 +66,10 @@ function App() {
               </Routes>
               <Footer />
               <FloatingChat />
-            </AppContainer>
-          </WalletContextProvider>
-        </Router>
-      </AuthProvider>
+            </AppContainerStyled>
+          </Router>
+        </AuthProvider>
+      </WalletProvider>
     </ThemeProvider>
   );
 }
