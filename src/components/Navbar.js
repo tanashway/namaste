@@ -1,6 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link, useLocation } from 'react-router-dom';
 import { ThemeContext } from '../context/ThemeContext';
 import { FaSun, FaMoon, FaYinYang, FaPaw } from 'react-icons/fa';
 import WalletConnect from './WalletConnect';
@@ -49,6 +50,28 @@ const NavLinks = styled.div`
 
 const NavLink = styled(motion.a)`
   position: relative;
+  font-weight: 500;
+  cursor: pointer;
+  
+  &:after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -5px;
+    left: 0;
+    background-color: ${props => props.theme.primary};
+    transition: width 0.3s ease;
+  }
+  
+  &:hover:after {
+    width: 100%;
+  }
+`;
+
+const RouterLink = styled(Link)`
+  text-decoration: none;
+  color: inherit;
   font-weight: 500;
   
   &:after {
@@ -103,6 +126,18 @@ const MobileNavLink = styled(motion.a)`
   }
 `;
 
+const MobileRouterLink = styled(Link)`
+  text-decoration: none;
+  color: inherit;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  font-weight: 500;
+  
+  &:hover {
+    background-color: ${props => props.theme.secondary};
+  }
+`;
+
 const ButtonGroup = styled.div`
   display: flex;
   gap: 1rem;
@@ -144,6 +179,8 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const isNamasteTheme = currentTheme.name === 'namaste';
+  const location = useLocation();
+  const isHomePage = location.pathname === '/';
   
   // Track scroll for navbar background opacity
   useEffect(() => {
@@ -189,34 +226,45 @@ const Navbar = () => {
       </Logo>
       
       <NavLinks theme={currentTheme}>
-        <NavLink 
-          href="#about" 
-          theme={currentTheme}
-          whileHover={{ y: -2 }}
-        >
-          {isNamasteTheme ? "Meow-bout" : "About"}
-        </NavLink>
-        <NavLink 
-          href="#features" 
-          theme={currentTheme}
-          whileHover={{ y: -2 }}
-        >
-          {isNamasteTheme ? "Paw-tures" : "Features"}
-        </NavLink>
-        <NavLink 
-          href="#tokenomics" 
-          theme={currentTheme}
-          whileHover={{ y: -2 }}
-        >
-          {isNamasteTheme ? "Token-meow-mics" : "Tokenomics"}
-        </NavLink>
-        <NavLink 
-          href="#community" 
-          theme={currentTheme}
-          whileHover={{ y: -2 }}
-        >
-          {isNamasteTheme ? "Cat-munity" : "Community"}
-        </NavLink>
+        {isHomePage ? (
+          <>
+            <NavLink 
+              href="#about" 
+              theme={currentTheme}
+              whileHover={{ y: -2 }}
+            >
+              {isNamasteTheme ? "Meow-bout" : "About"}
+            </NavLink>
+            <NavLink 
+              href="#features" 
+              theme={currentTheme}
+              whileHover={{ y: -2 }}
+            >
+              {isNamasteTheme ? "Paw-tures" : "Features"}
+            </NavLink>
+            <NavLink 
+              href="#tokenomics" 
+              theme={currentTheme}
+              whileHover={{ y: -2 }}
+            >
+              {isNamasteTheme ? "Token-meow-mics" : "Tokenomics"}
+            </NavLink>
+            <NavLink 
+              href="#community" 
+              theme={currentTheme}
+              whileHover={{ y: -2 }}
+            >
+              {isNamasteTheme ? "Cat-munity" : "Community"}
+            </NavLink>
+          </>
+        ) : (
+          <RouterLink to="/" theme={currentTheme}>
+            Home
+          </RouterLink>
+        )}
+        <RouterLink to="/memes" theme={currentTheme}>
+          {isNamasteTheme ? "Meow-mes" : "Memes"}
+        </RouterLink>
       </NavLinks>
       
       <ButtonGroup>
@@ -278,49 +326,49 @@ const Navbar = () => {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
           >
-            <MobileNavLink 
-              href="#about" 
-              theme={currentTheme}
-              onClick={() => setIsOpen(false)}
-              whileHover={{ x: 5 }}
-            >
-              {isNamasteTheme ? "Meow-bout" : "About"}
-            </MobileNavLink>
-            <MobileNavLink 
-              href="#features" 
-              theme={currentTheme}
-              onClick={() => setIsOpen(false)}
-              whileHover={{ x: 5 }}
-            >
-              {isNamasteTheme ? "Paw-tures" : "Features"}
-            </MobileNavLink>
-            <MobileNavLink 
-              href="#tokenomics" 
-              theme={currentTheme}
-              onClick={() => setIsOpen(false)}
-              whileHover={{ x: 5 }}
-            >
-              {isNamasteTheme ? "Token-meow-mics" : "Tokenomics"}
-            </MobileNavLink>
-            <MobileNavLink 
-              href="#community" 
-              theme={currentTheme}
-              onClick={() => setIsOpen(false)}
-              whileHover={{ x: 5 }}
-            >
-              {isNamasteTheme ? "Cat-munity" : "Community"}
-            </MobileNavLink>
-            <MobileNavLink 
-              as="button"
-              theme={currentTheme}
-              onClick={() => {
-                setIsOpen(false);
-                // We'll handle wallet connection in the main WalletConnect component
-              }}
-              whileHover={{ x: 5 }}
-            >
-              {isNamasteTheme ? "Connect Paw-let" : "Connect Wallet"}
-            </MobileNavLink>
+            {isHomePage ? (
+              <>
+                <MobileNavLink 
+                  href="#about" 
+                  theme={currentTheme}
+                  onClick={() => setIsOpen(false)}
+                  whileHover={{ x: 5 }}
+                >
+                  {isNamasteTheme ? "Meow-bout" : "About"}
+                </MobileNavLink>
+                <MobileNavLink 
+                  href="#features" 
+                  theme={currentTheme}
+                  onClick={() => setIsOpen(false)}
+                  whileHover={{ x: 5 }}
+                >
+                  {isNamasteTheme ? "Paw-tures" : "Features"}
+                </MobileNavLink>
+                <MobileNavLink 
+                  href="#tokenomics" 
+                  theme={currentTheme}
+                  onClick={() => setIsOpen(false)}
+                  whileHover={{ x: 5 }}
+                >
+                  {isNamasteTheme ? "Token-meow-mics" : "Tokenomics"}
+                </MobileNavLink>
+                <MobileNavLink 
+                  href="#community" 
+                  theme={currentTheme}
+                  onClick={() => setIsOpen(false)}
+                  whileHover={{ x: 5 }}
+                >
+                  {isNamasteTheme ? "Cat-munity" : "Community"}
+                </MobileNavLink>
+              </>
+            ) : (
+              <MobileRouterLink to="/" onClick={() => setIsOpen(false)}>
+                Home
+              </MobileRouterLink>
+            )}
+            <MobileRouterLink to="/memes" onClick={() => setIsOpen(false)}>
+              {isNamasteTheme ? "Meow-mes" : "Memes"}
+            </MobileRouterLink>
           </MobileMenu>
         )}
       </AnimatePresence>

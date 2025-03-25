@@ -2,12 +2,14 @@ import React, { useContext, useEffect } from 'react';
 import styled from 'styled-components';
 import { ThemeContext } from './context/ThemeContext';
 import { WalletContextProvider } from './context/WalletContext';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import About from './components/About';
 import Features from './components/Features';
 import Tokenomics from './components/Tokenomics';
 import Community from './components/Community';
+import Memes from './components/Memes';
 import Footer from './components/Footer';
 import ScrollProgress from './components/ScrollProgress';
 import CatThemeElements from './components/CatThemeElements';
@@ -19,6 +21,19 @@ const AppContainer = styled.div`
   transition: background-color 0.3s ease, color 0.3s ease;
   min-height: 100vh;
 `;
+
+// Main page component
+const MainPage = () => {
+  return (
+    <>
+      <Hero />
+      <About />
+      <Features />
+      <Tokenomics />
+      <Community />
+    </>
+  );
+};
 
 function App() {
   const { currentTheme } = useContext(ThemeContext);
@@ -34,20 +49,21 @@ function App() {
   }, []);
 
   return (
-    <WalletContextProvider>
-      <AppContainer theme={currentTheme}>
-        <CatThemeElements />
-        <Navbar />
-        <ScrollProgress />
-        <Hero />
-        <About />
-        <Features />
-        <Tokenomics />
-        <Community />
-        <Footer />
-        <FloatingChat />
-      </AppContainer>
-    </WalletContextProvider>
+    <Router>
+      <WalletContextProvider>
+        <AppContainer theme={currentTheme}>
+          <CatThemeElements />
+          <Navbar />
+          <ScrollProgress />
+          <Routes>
+            <Route path="/" element={<MainPage />} />
+            <Route path="/memes" element={<Memes />} />
+          </Routes>
+          <Footer />
+          <FloatingChat />
+        </AppContainer>
+      </WalletContextProvider>
+    </Router>
   );
 }
 
