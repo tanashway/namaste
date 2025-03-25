@@ -85,9 +85,10 @@ const PieChart = styled.div`
   height: 300px;
   border-radius: 50%;
   background: conic-gradient(
-    ${props => props.theme.primary} 0% 65%,
-    ${props => props.theme.accent} 65% 95%,
-    #9c88ff 95% 100%
+    ${props => props.theme.primary} 0% 88%,
+    ${props => props.theme.accent} 88% 93%,
+    #9c88ff 93% 98%,
+    #2ecc71 98% 100%
   );
   margin: 0 auto;
   position: relative;
@@ -158,32 +159,38 @@ const tokenomicsData = [
   },
   {
     title: "Fair Launch",
-    content: "Namaste Token was fair launched on SNEK.fun, with 65% of tokens distributed to community participants."
+    content: "Namaste Token was fair launched on SNEK.fun, with 88% of tokens distributed to community participants."
   },
   {
     title: "Liquidity & Listings",
-    content: "30% of tokens support liquidity pools, while 5% are reserved for integrations and CEX listings."
+    content: "5% of tokens support liquidity pools, while 5% are reserved for CEX listings, and 2% for marketing initiatives."
   }
 ];
 
 const distributionData = [
   {
-    label: "Community Distribution",
-    percentage: "65%",
+    label: "Fair Launch",
+    percentage: "88%",
     color: "#61dafb",
-    details: "65% were distributed to community participants from the Snek Fun launch."
+    details: "88% were distributed to community participants from the Snek Fun launch."
+  },
+  {
+    label: "CEX Listings",
+    percentage: "5%",
+    color: "#ff6b6b",
+    details: "5% are reserved for future CEX listings and integrations."
   },
   {
     label: "Liquidity Pools",
-    percentage: "30%",
-    color: "#ff6b6b",
-    details: "30% of the tokens to support liquidity pools."
-  },
-  {
-    label: "Integrations & CEX Listings",
     percentage: "5%",
     color: "#9c88ff",
-    details: "5% are reserved for integrations and CEX listings."
+    details: "5% of the tokens to support liquidity pools."
+  },
+  {
+    label: "Marketing",
+    percentage: "2%",
+    color: "#2ecc71",
+    details: "2% allocated for marketing initiatives and community growth."
   }
 ];
 
