@@ -211,65 +211,36 @@ const Navbar = () => {
   };
 
   return (
-    <NavContainer theme={currentTheme} style={{ 
-      backgroundColor: scrolled ? currentTheme.navBackground : 'transparent',
-      boxShadow: scrolled ? '0 2px 10px rgba(0, 0, 0, 0.1)' : 'none'
-    }}>
-      <Logo 
-        variants={logoVariants}
-        whileHover="hover"
-        whileTap="tap"
-        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-      >
-        <img src={currentTheme.logoImage} alt="Namaste Logo" />
-        <span>{isNamasteTheme ? "Meowmaste" : "Namaste"}</span>
-      </Logo>
-      
-      <NavLinks theme={currentTheme}>
+    <NavContainer theme={currentTheme} style={{ backgroundColor: scrolled ? currentTheme.navBackground : 'transparent' }}>
+      <RouterLink to="/">
+        <Logo
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          {isNamasteTheme ? (
+            <img src="/logo-light.png" alt="Namaste Token" />
+          ) : (
+            <img src="/logo-dark.png" alt="Namaste Token" />
+          )}
+        </Logo>
+      </RouterLink>
+
+      <NavLinks>
         {isHomePage ? (
           <>
-            <NavLink 
-              href="#about" 
-              theme={currentTheme}
-              whileHover={{ y: -2 }}
-            >
-              {isNamasteTheme ? "Meow-bout" : "About"}
-            </NavLink>
-            <NavLink 
-              href="#features" 
-              theme={currentTheme}
-              whileHover={{ y: -2 }}
-            >
-              {isNamasteTheme ? "Paw-tures" : "Features"}
-            </NavLink>
-            <NavLink 
-              href="#tokenomics" 
-              theme={currentTheme}
-              whileHover={{ y: -2 }}
-            >
-              {isNamasteTheme ? "Token-meow-mics" : "Tokenomics"}
-            </NavLink>
-            <NavLink 
-              href="#community" 
-              theme={currentTheme}
-              whileHover={{ y: -2 }}
-            >
-              {isNamasteTheme ? "Cat-munity" : "Community"}
-            </NavLink>
+            <NavLink href="#about">About</NavLink>
+            <NavLink href="#features">Features</NavLink>
+            <NavLink href="#tokenomics">Tokenomics</NavLink>
+            <NavLink href="#community">Community</NavLink>
           </>
-        ) : (
-          <RouterLink to="/" theme={currentTheme}>
-            Home
-          </RouterLink>
-        )}
-        <RouterLink to="/memes" theme={currentTheme}>
-          {isNamasteTheme ? "Meow-mes" : "Memes"}
-        </RouterLink>
+        ) : null}
+        <RouterLink to="/memes">Memes</RouterLink>
       </NavLinks>
-      
+
       <ButtonGroup>
         <ThemeToggle>
-          <ThemeButton 
+          <ThemeButton
             theme={currentTheme}
             $active={currentTheme.name === 'light'}
             onClick={() => changeTheme('light')}
@@ -278,7 +249,7 @@ const Navbar = () => {
           >
             <FaSun />
           </ThemeButton>
-          <ThemeButton 
+          <ThemeButton
             theme={currentTheme}
             $active={currentTheme.name === 'dark'}
             onClick={() => changeTheme('dark')}
@@ -287,7 +258,7 @@ const Navbar = () => {
           >
             <FaMoon />
           </ThemeButton>
-          <ThemeButton 
+          <ThemeButton
             theme={currentTheme}
             $active={currentTheme.name === 'namaste'}
             onClick={() => changeTheme('namaste')}
@@ -296,27 +267,23 @@ const Navbar = () => {
           >
             <FaYinYang />
             {currentTheme.name === 'namaste' && (
-              <CatPawIndicator 
-                theme={currentTheme}
-                animate={{ rotate: [0, 15, 0, -15, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
+              <CatPawIndicator
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0 }}
               >
                 <FaPaw />
               </CatPawIndicator>
             )}
           </ThemeButton>
         </ThemeToggle>
-        
-        <WalletConnect theme={currentTheme} isNamasteTheme={isNamasteTheme} />
-        
-        <MobileMenuButton 
-          theme={currentTheme} 
-          onClick={toggleMenu}
-        >
-          {isOpen ? '✕' : '☰'}
-        </MobileMenuButton>
+        <WalletConnect />
       </ButtonGroup>
-      
+
+      <MobileMenuButton onClick={toggleMenu}>
+        <span>☰</span>
+      </MobileMenuButton>
+
       <AnimatePresence>
         {isOpen && (
           <MobileMenu
@@ -324,51 +291,16 @@ const Navbar = () => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
           >
             {isHomePage ? (
               <>
-                <MobileNavLink 
-                  href="#about" 
-                  theme={currentTheme}
-                  onClick={() => setIsOpen(false)}
-                  whileHover={{ x: 5 }}
-                >
-                  {isNamasteTheme ? "Meow-bout" : "About"}
-                </MobileNavLink>
-                <MobileNavLink 
-                  href="#features" 
-                  theme={currentTheme}
-                  onClick={() => setIsOpen(false)}
-                  whileHover={{ x: 5 }}
-                >
-                  {isNamasteTheme ? "Paw-tures" : "Features"}
-                </MobileNavLink>
-                <MobileNavLink 
-                  href="#tokenomics" 
-                  theme={currentTheme}
-                  onClick={() => setIsOpen(false)}
-                  whileHover={{ x: 5 }}
-                >
-                  {isNamasteTheme ? "Token-meow-mics" : "Tokenomics"}
-                </MobileNavLink>
-                <MobileNavLink 
-                  href="#community" 
-                  theme={currentTheme}
-                  onClick={() => setIsOpen(false)}
-                  whileHover={{ x: 5 }}
-                >
-                  {isNamasteTheme ? "Cat-munity" : "Community"}
-                </MobileNavLink>
+                <MobileNavLink href="#about" onClick={() => setIsOpen(false)}>About</MobileNavLink>
+                <MobileNavLink href="#features" onClick={() => setIsOpen(false)}>Features</MobileNavLink>
+                <MobileNavLink href="#tokenomics" onClick={() => setIsOpen(false)}>Tokenomics</MobileNavLink>
+                <MobileNavLink href="#community" onClick={() => setIsOpen(false)}>Community</MobileNavLink>
               </>
-            ) : (
-              <MobileRouterLink to="/" onClick={() => setIsOpen(false)}>
-                Home
-              </MobileRouterLink>
-            )}
-            <MobileRouterLink to="/memes" onClick={() => setIsOpen(false)}>
-              {isNamasteTheme ? "Meow-mes" : "Memes"}
-            </MobileRouterLink>
+            ) : null}
+            <MobileRouterLink to="/memes" onClick={() => setIsOpen(false)}>Memes</MobileRouterLink>
           </MobileMenu>
         )}
       </AnimatePresence>
