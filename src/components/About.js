@@ -111,11 +111,15 @@ const faqData = [
   },
   {
     question: "How can I buy Namaste Token?",
-    answer: "Set up a Tokeo or Vesper wallet, Buy some $ADA, Head to SNEK.fun to grab Namaste Token on Cardano."
+    answer: "Set up a Tokeo or VESPR wallet, Buy some $ADA, Head to SNEK.fun to grab Namaste Token on Cardano."
   },
   {
     question: "What makes Namaste different from other meme tokens?",
     answer: "Unlike chaotic meme coins, Namaste blends mindfulness with moonshots. Built on Cardano's eco-network and launched on SNEK.fun, we bring calm vibes and gains."
+  },
+  {
+    question: "What are the Tokenomics?",
+    answer: "88% for the fair launch, 5% for CEX listings, 5% for liquidity, and 2% for marketing. Our distribution ensures a truly community-driven token with maximum fairness."
   },
   {
     question: "How can I join the Namaste community?",
